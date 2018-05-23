@@ -128,7 +128,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		// only operate on user registration
 		$page = Request::getRequestedPage();
 		$op = Request::getRequestedOp();
-		if (isset($element) && $page === 'user' && $op === 'register') {
+		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
 			$output .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl');
 		}
@@ -143,12 +143,24 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function validateHoneypot($hookName, $params) {
 		$journal =& Request::getJournal();
-		$element = $this->getSetting($journal->getId(), 'element');
+		if (isset($journal)) {
+			$element = $this->getSetting($journal->getId(), 'element');
+		}
 		$form = $params[0];
-		if (isset($journal) && isset($element)) {
+		// If we have an element selected as a honeypot, check it 
+		if (isset($element) && isset($form)) {
 			$value = $form->getData($element);
+			// Is it localized?
+			if (is_array($value)) {
+				$value = implode('', array_values($value));
+			}
+			// If not empty, flag an error
 			if (!empty($value)) {
-				$form->addError($element, __('plugins.generic.formHoneypot.doNotUseThisField'));
+				$message = __('plugins.generic.formHoneypot.doNotUseThisField', array('element' => __($this->availableElements[$element])));
+				$form->addError(
+					$element,
+					$message
+				);
 			}
 		}
 		return false;

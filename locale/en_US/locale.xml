@@ -16,7 +16,7 @@
 	<message key="plugins.generic.formHoneypot.displayName">Form Honeypot Plugin</message>
 	<message key="plugins.generic.formHoneypot.description"><![CDATA[This plugin will convert one of the fields on the user registration form into a honeypot.  This field will be hidden from users and an error will be presented if a bot fills out the field.]]></message>
 	<message key="plugins.generic.formHoneypot.leaveBlank">Leave this blank</message>
-	<message key="plugins.generic.formHoneypot.doNotUseThisField">This field must be left blank.</message>
+	<message key="plugins.generic.formHoneypot.doNotUseThisField">This field must be left blank: {$element}</message>
 	
 	<!-- Form Honeypot Settings Management -->
 	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Form Honeypot Settings</message>
