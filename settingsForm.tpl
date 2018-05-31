@@ -22,11 +22,23 @@
 {include file="common/formErrors.tpl"}
 <table width="100%" class="data">
 	<tr valign="top">
-		<td width="20%" class="label">{fieldLabel name="formHoneypotElement" required="true" key="plugins.generic.formHoneypot.manager.settings.element"}</td>
+		<td width="20%" class="label">{fieldLabel name="formHoneypotElement" key="plugins.generic.formHoneypot.manager.settings.element"}</td>
 		<td width="80%" class="value">
 			<select class="selectMenu" name="element" id="element">
 				{html_options_translate options=$elementOptions selected=$element}
 			</select>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td width="20%" class="label">{fieldLabel name="minimimTime" key="plugins.generic.formHoneypot.manager.settings.minimumTime"}</td>
+		<td width="80%" class="value">
+			<input type="text" name="minimumTime" id="minimumTime" value="{$minimumTime|escape}" size="15" maxlength="15" class="textField" />
+		</td>
+	</tr>
+	<tr valign="top">
+		<td width="20%" class="label">{fieldLabel name="maximumTime" key="plugins.generic.formHoneypot.manager.settings.maximumTime"}</td>
+		<td width="80%" class="value">
+			<input type="text" name="maximumTime" id="formHoneypotMaximumTime" value="{$maximumTime|escape}" size="15" maxlength="15" class="textField" />
 		</td>
 	</tr>
 </table>

@@ -34,7 +34,8 @@ class FormHoneypotSettingsForm extends Form {
 		
 		parent::Form($plugin->getTemplatePath() . 'settingsForm.tpl');
 
-		$this->addCheck(new FormValidator($this, 'element', 'required', 'plugins.generic.formHoneypot.manager.settings.elementRequired'));
+		$this->addCheck(new FormValidatorCustom($this, 'minimumTime', 'optional', 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
+		$this->addCheck(new FormValidatorCustom($this, 'maximimTime', 'optional', 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
 		$this->addCheck(new FormValidatorPost($this));
 	}
 
@@ -44,14 +45,16 @@ class FormHoneypotSettingsForm extends Form {
 	function initData() {
 		$journalId = $this->journalId;
 		$plugin =& $this->plugin;
-		$this->_data['element'] = $plugin->getSetting($journalId, 'element');
+		foreach (array_keys($this->plugin->settingNames) as $k) {
+			$this->_data[$k] = $plugin->getSetting($journalId, $k);
+		}
 	}
 
 	/**
 	 * Assign form data to user-submitted data.
 	 */
 	function readInputData() {
-		$this->readUserVars(array('element'));
+		$this->readUserVars(array_keys($this->plugin->settingNames));
 	}
 
 	/**
@@ -60,7 +63,9 @@ class FormHoneypotSettingsForm extends Form {
 	function execute() {
 		$plugin =& $this->plugin;
 		$journalId = $this->journalId;
-		$plugin->updateSetting($journalId, 'element', $this->getData('element'), 'string');
+		foreach ($this->plugin->settingNames as $k => $v) {
+			$plugin->updateSetting($journalId, $k, $this->getData($k), $v);
+		}
 	}
 	
 }

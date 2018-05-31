@@ -18,7 +18,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 	/**
 	 * @var $availableElements array()
-	 *  This array this the possible input elements
+	 *  This array lists the possible input elements
 	 */
 	public $availableElements = array(
 			'userUrl' => 'user.url',
@@ -30,7 +30,23 @@ class FormHoneypotPlugin extends GenericPlugin {
 			'signature' => 'user.signature',
 			'biography' => 'user.biography',
 	);
-	
+
+	/**
+	 * @var $settingNames array()
+	 * This array represents the fields on the settings form
+	 */
+	public $settingNames = array(
+		'element' => 'string',
+		'minimumTime' => 'int',
+		'maximumTime' => 'int',
+	);
+
+	/**
+	 * @var $formTimerSetting string
+	 * This is the name of the setting used to track a users time during registration
+	 */
+	public $formTimerSetting = 'registrationTimer';
+
 	/**
 	 * Called as a plugin is registered to the registry
 	 * @param $category String Name of category plugin was registered to
@@ -45,6 +61,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertHtml'));
 			// Attach to the registration form validation
 			HookRegistry::register('registrationform::validate', array($this, 'validateHoneypot'));
+			// Attach to the registration form display
+			HookRegistry::register('registrationform::display', array($this, 'initializeTimer'));
 		}
 		return $success;
 	}
@@ -145,6 +163,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$journal =& Request::getJournal();
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'element');
+			$minTime = $this->getSetting($journal->getId(), 'minimumTime');
+			$maxTime = $this->getSetting($journal->getId(), 'maximumTime');
 		}
 		$form = $params[0];
 		// If we have an element selected as a honeypot, check it 
@@ -162,6 +182,37 @@ class FormHoneypotPlugin extends GenericPlugin {
 					$message
 				);
 			}
+		}
+		if ($form && $form->isValid() && ($minTime > 0 || $maxTime > 0)) {
+			// Get the initial access to this form within this session
+			$sessionManager =& SessionManager::getManager();
+			$session =& $sessionManager->getUserSession();
+			$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
+			if (!$started || ($minTime > 0 && time() - $started < $minTime) || ($maxTime > 0 && time() - $started > $maxTime)) {
+				$form->addError(
+					'username',
+					__('plugins.generic.formHoneypot.invalidSessionTime')
+				);
+			} else {
+				$started = $session->unsetSessionVar($this->getName()."::".$this->formTimerSetting);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Start monitoring for timing for form completion
+	 * @param $hookName string Name of hook calling function
+	 * @return boolean
+	 */
+	function initializeTimer($hookName) {
+		// remember when this form was initialized for the user
+		// we'll store it as a user setting on form execution
+		$sessionManager =& SessionManager::getManager();
+		$session =& $sessionManager->getUserSession();
+		$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
+		if (!$started) {
+			$session->setSessionVar($this->getName()."::".$this->formTimerSetting, time());
 		}
 		return false;
 	}
@@ -193,7 +244,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$this->import('FormHoneypotSettingsForm');
 				$form = new FormHoneypotSettingsForm($this, $journal->getId());
 				// This assigns select options
-				$templateMgr->assign('elementOptions', $this->availableElements);
+				$templateMgr->assign('elementOptions', array_merge(array('' => ''), $this->availableElements));
 				if (Request::getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {

@@ -14,13 +14,16 @@
 
 	<!-- Form Honeypot -->
 	<message key="plugins.generic.formHoneypot.displayName">Form Honeypot Plugin</message>
-	<message key="plugins.generic.formHoneypot.description"><![CDATA[This plugin will convert one of the fields on the user registration form into a honeypot.  This field will be hidden from users and an error will be presented if a bot fills out the field.]]></message>
+	<message key="plugins.generic.formHoneypot.description"><![CDATA[This plugin will convert one of the fields on the user registration form into a honeypot.  This field will be hidden from users and an error will be presented if a bot fills out the field.  You may also select a minimum and maximum time to allow for form completion.  For example, if a bot completes the form in under 2 seconds or tries to use the same form 30 minutes (1800 seconds) later, the registration can be blocked.]]></message>
 	<message key="plugins.generic.formHoneypot.leaveBlank">Leave this blank</message>
 	<message key="plugins.generic.formHoneypot.doNotUseThisField">This field must be left blank: {$element}</message>
-	
+	<message key="plugins.generic.formHoneypot.invalidSessionTime">Your registration has been blocked.</message>
 	<!-- Form Honeypot Settings Management -->
 	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Form Honeypot Settings</message>
 	<message key="plugins.generic.formHoneypot.manager.settings.description"><![CDATA[Select the field on the registration form which you would like to convert into a bot honeypot.  This field will be hidden from normal users via javascript, but bots are likely to still see and to try to use the field.  Using this field will result in a registration error.  The field will still be available to users from the user profile form after registration.]]></message>
 	<message key="plugins.generic.formHoneypot.manager.settings.element">Form Element</message>
-	<message key="plugins.generic.formHoneypot.manager.settings.elementRequired">The form element selection is required.</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTime">Minimum time (in seconds)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTimeNumber">Minimum time must be a positive numeric value.</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTime">Maximum time (in seconds)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTimeNumber">Maximum time must be a positive numeric value.</message>
 </locale>
