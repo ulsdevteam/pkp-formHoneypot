@@ -23,6 +23,13 @@ class FormHoneypotSettingsForm extends Form {
 	/** @var $plugin object */
 	var $plugin;
 
+	/** $var $elementNames array() */
+	var $elementNames = array(
+		's' => array('user', 'admin', 'form', 'tool', 'system'),
+		'v' => array('Confirm', 'Validate', 'Assign', 'Agree', 'Add'),
+		'p' => array('Terms', 'Options', 'Activity', 'Access')
+	);
+
 	/**
 	 * Constructor
 	 * @param $plugin object
@@ -65,6 +72,15 @@ class FormHoneypotSettingsForm extends Form {
 		$journalId = $this->journalId;
 		foreach ($this->plugin->settingNames as $k => $v) {
 			$plugin->updateSetting($journalId, $k, $this->getData($k), $v);
+		}
+		if ($this->getData('element') === 'createNewElement') {
+			$element = $this->elementNames['s'][rand(0, count($this->elementNames['s'])-1)] . $this->elementNames['v'][rand(0, count($this->elementNames['v'])-1)] . $this->elementNames['p'][rand(0, count($this->elementNames['p'])-1)];
+			$plugin->updateSetting(
+				$journalId,
+				'customElement',
+				$element,
+				'string'
+			);
 		}
 	}
 	

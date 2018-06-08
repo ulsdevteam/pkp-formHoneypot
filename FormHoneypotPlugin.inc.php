@@ -29,6 +29,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			'affiliation' => 'user.affiliation',
 			'signature' => 'user.signature',
 			'biography' => 'user.biography',
+			'createNewElement' => 'plugins.generic.formHoneypot.manager.settings.createNewElement',
 	);
 
 	/**
@@ -63,6 +64,9 @@ class FormHoneypotPlugin extends GenericPlugin {
 			HookRegistry::register('registrationform::validate', array($this, 'validateHoneypot'));
 			// Attach to the registration form display
 			HookRegistry::register('registrationform::display', array($this, 'initializeTimer'));
+			// Add custom field if desired
+			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
+			HookRegistry::register('registrationform::readuservars', array($this, 'handleUserVar'));
 		}
 		return $success;
 	}
@@ -141,7 +145,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$currentJournal = $templateMgr->get_template_vars('currentJournal');
 		// element is required to set the honeypot
 		if (isset($currentJournal)) {
-			$element = $this->getSetting($currentJournal->getId(), 'element');
+			$element = $this->getElementSetting($currentJournal->getId());
 		}
 		// only operate on user registration
 		$page = Request::getRequestedPage();
@@ -162,7 +166,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function validateHoneypot($hookName, $params) {
 		$journal =& Request::getJournal();
 		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'element');
+			$element = $this->getElementSetting($journal->getId());
 			$minTime = $this->getSetting($journal->getId(), 'minimumTime');
 			$maxTime = $this->getSetting($journal->getId(), 'maximumTime');
 		}
@@ -176,7 +180,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			}
 			// If not empty, flag an error
 			if (!empty($value)) {
-				$message = __('plugins.generic.formHoneypot.doNotUseThisField', array('element' => __($this->availableElements[$element])));
+				$elementName = (isset($this->availableElements[$element]) ? $this->availableElements[$element] : 'plugins.generic.formHoneypot.leaveBlank');
+				$message = __('plugins.generic.formHoneypot.doNotUseThisField', array('element' => __($elementName)));
 				$form->addError(
 					$element,
 					$message
@@ -271,6 +276,84 @@ class FormHoneypotPlugin extends GenericPlugin {
 				return false;
 		}
 	}
-	
+
+	/**
+	 * Hook callback: register output filter to add a new registration field
+	 * @see TemplateManager::display()
+	 */
+	function handleTemplateDisplay($hookName, $args) {
+		$templateMgr =& $args[0];
+		$template =& $args[1];
+
+		switch ($template) {
+			case 'user/register.tpl':
+					$journal =& Request::getJournal();
+					$element = $this->getSetting($journal->getId(), 'element');
+					$customElement = $this->getSetting($journal->getId(), 'customElement');
+					if ($element === 'createNewElement' && !empty($customElement)) {
+						$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
+					}
+				break;
+		}
+		return false;
+	}
+
+	/**
+	 * Hook callback: assign user variable within Registration form
+	 * @see Form::readUserVars()
+	 */
+	function handleUserVar($hookName, $args) {
+		$form =& $args[0];
+		$vars =& $args[1];
+		$journal =& Request::getJournal();
+		if (isset($journal)) {
+			$element = $this->getSetting($journal->getId(), 'element');
+			if ($element === 'createNewElement') {
+				$element = $this->getElementSetting($journal->getId());
+				$vars[] = $element;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Output filter to create a new element in a registration form
+	 * @param $output string
+	 * @param $templateMgr TemplateManager
+	 * @return $string
+	 */
+	function addCustomElement($output, &$templateMgr) {
+		if (preg_match('/<form id="registerForm"/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+			$formStart = $matches[0][1];
+			$matches = array();
+			if (preg_match_all('/(\s+<tr valign="top">\s+<td class="label">)/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart)) {
+				$placement = rand(0, count($matches[0]));
+				$journal =& Request::getJournal();
+				$element = $this->getSetting($journal->getId(), 'customElement');
+				$templateMgr->assign('element', $element);
+				$offset = $matches[0][$placement][1];
+				$newOutput = substr($output, 0, $offset);
+				$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');;
+				$newOutput .= substr($output, $offset);
+				$output = $newOutput;
+			}
+		}
+		$templateMgr->unregister_outputfilter('addCustomElement');
+		return $output;
+	}
+
+	/**
+	 * Get the actual name of the honeypot field
+	 * @param $journalId int Journal ID
+	 * @return $string
+	 */
+	function getElementSetting($journalId) {
+		$element = $this->getSetting($journalId, 'element');
+		$customElement = $this->getSetting($journalId, 'customElement');
+		if ($element === 'createNewElement' && !empty($customElement)) {
+			$element = $customElement;
+		}
+		return $element;
+	}
 }
 ?>
