@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * plugins/generic/formHoneypot/locale/es_ES/locale.xml
+  *
+  * Copyright (c) 2018 University of Pittsburgh
+  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+  * 
+  * Translation credits: https://pkp.sfu.ca/wiki/index.php?title=OMP:_Spanish_(es_ES)
+  *
+  * Form Honeypot plugin localization strings
+  -->
+ 
+<locale name="es_ES" full_name="Español">
+
+	<!-- Form Honeypot -->
+	<message key="plugins.generic.formHoneypot.displayName">Módulo de formulario Honeypot</message>
+	<message key="plugins.generic.formHoneypot.description"><![CDATA[Este módulo convierte uno de los campos del formulario de registro de usuario en un honeypot. El campo escogido se esconderá a los usuarios normales, de manera que, cuando un robot lo complete, se mostrará un error. Puede configurar el tiempo mínimo y máximo para completar el formulario. Por ejemplo, si un robot completa el forumlario en 2 segundos o intenta utilizar el mismo formulario 30 minutos (1800 segundos) más tarde, el registro puede bloquearse.]]></message>
+	<message key="plugins.generic.formHoneypot.leaveBlank">Dejar en blanco</message>
+	<message key="plugins.generic.formHoneypot.doNotUseThisField">Este campo debe dejarse en blanco: {$element}</message>
+	<message key="plugins.generic.formHoneypot.invalidSessionTime">Petición de registro bloqueada.</message>
+	<!-- Form Honeypot Settings Management -->
+	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Configuración del formulario Honeypot</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.description"><![CDATA[Escoge el campo del formulario de registro de usuario que quieres convertir en un Honeypot para robots. Este campo se esconderá a los usuarios normales (mediante javascript), pero los bots lo seguirán viendo e intentarán completarlo. Si se completase, generaría un error de registro. El campo seguirá estando disponible en el perfil para los usuarios una vez registrados.]]></message>
+	<message key="plugins.generic.formHoneypot.manager.settings.element">Elemento de formulario</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.createNewElement">Crear un nuevo elemento</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTime">Tiempo mínimo (en segundos)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTimeNumber">El tiempo mínimo, debe ser un número positivo.</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTime">Tiempo máximo (en segundos)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTimeNumber">El tiempo máximo debe ser un número positivo.</message>
+</locale>
