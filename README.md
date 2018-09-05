@@ -9,7 +9,7 @@ This plugin verifies new user registrations by creating a honeypot on the User R
 
 ## Installation
 
-Install this as a "generic" plugin in OJS.  To install manually via the filesystem, extract the contents of this archive to a directory (e.g. "formHoneypot") under "plugins/generic" in your OJS root.  To install via Git submodule, target that same directory path: `git submodule add https://github.com/ulsdevteam/pkp-formHoneypot plugins/generic/formHoneypot` and `git submodule update --init --recursive plugins/generic/formHoneypot`.  Run the upgrade script to register this plugin, e.g.: `php tools/upgrade.php upgrade`
+Install this as a "generic" plugin in OJS.  To install manually via the filesystem, extract the contents of this archive to a "formHoneypot" directory under "plugins/generic" in your OJS root.  To install via Git submodule, target that same directory path: `git submodule add https://github.com/ulsdevteam/pkp-formHoneypot plugins/generic/formHoneypot` and `git submodule update --init --recursive plugins/generic/formHoneypot`.  Run the upgrade script to register this plugin, e.g.: `php tools/upgrade.php upgrade`
 
 ## Configuration
 
