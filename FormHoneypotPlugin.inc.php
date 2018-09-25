@@ -21,14 +21,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 *  This array lists the possible input elements
 	 */
 	public $availableElements = array(
-			'userUrl' => 'user.url',
-			'phone' => 'user.phone',
-			'fax' => 'user.fax',
-			'gender' => 'user.gender',
-			'mailingAddress' => 'common.mailingAddress',
-			'affiliation' => 'user.affiliation',
-			'signature' => 'user.signature',
-			'biography' => 'user.biography',
+			'middleName' => 'user.middleName',
 			'createNewElement' => 'plugins.generic.formHoneypot.manager.settings.createNewElement',
 	);
 
@@ -60,6 +53,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		if ($success && $this->getEnabled()) {
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertHtml'));
+            // HookRegistry::register('TemplateManager::display', array($this, 'insertHtml'));
 			// Attach to the registration form validation
 			HookRegistry::register('registrationform::validate', array($this, 'validateHoneypot'));
 			// Attach to the registration form display
@@ -88,38 +82,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 	}
 
 	/**
-	 * Set the page's breadcrumbs, given the plugin's tree of items
-	 * to append.
-	 * @param $isSubclass boolean
-	 */
-	function setBreadcrumbs($isSubclass = false) {
-		$templateMgr =& TemplateManager::getManager();
-		$pageCrumbs = array(
-			array(
-				Request::url(null, 'user'),
-				'navigation.user'
-			),
-			array(
-				Request::url(null, 'manager'),
-				'user.role.manager'
-			)
-		);
-		if ($isSubclass) {
-			$pageCrumbs[] = array(
-				Request::url(null, 'manager', 'plugins'),
-				'manager.plugins'
-			);
-			$pageCrumbs[] = array(
-				Request::url(null, 'manager', 'plugins', 'generic'),
-				'plugins.categories.generic'
-			);
-		}
-
-		$templateMgr->assign('pageHierarchy', $pageCrumbs);
-	}
-
-
-	/**
 	 * Display verbs for the management interface.
 	 * @return array of verb => description pairs
 	 */
@@ -138,10 +100,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function insertHtml($hookName, $params) {
-		$output =& $params[2];
-		$templateMgr =& TemplateManager::getManager();
+		$output = $params[2];
+		$templateMgr = TemplateManager::getManager();
 		
-		// journal is required to retreive settings
+		// journal is required to retrieve settings
 		$currentJournal = $templateMgr->get_template_vars('currentJournal');
 		// element is required to set the honeypot
 		if (isset($currentJournal)) {
@@ -164,7 +126,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function validateHoneypot($hookName, $params) {
-		$journal =& Request::getJournal();
+		$journal = Request::getJournal();
 		if (isset($journal)) {
 			$element = $this->getElementSetting($journal->getId());
 			$minTime = $this->getSetting($journal->getId(), 'minimumTime');
@@ -230,46 +192,31 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @param $messageParams array Parameters for the message key
 	 * @return boolean
 	 */
-	function manage($verb, $args, &$message, &$messageParams) {
-		if (!parent::manage($verb, $args, $message, $messageParams)) {
-			// If enabling this plugin, go directly to the settings
-			if ($verb == 'enable') {
-				$verb = 'settings';
-			} else {
-				return false;
-			}
-		}
-
-		switch ($verb) {
+	function manage($args, $request) {
+		switch ($request->getUserVar('verb')) {
 			case 'settings':
-				$templateMgr =& TemplateManager::getManager();
-				$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
-				$journal =& Request::getJournal();
+				$context = $request->getContext();
+
+				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER);
+				$templateMgr = TemplateManager::getManager($request);
+				$templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
 
 				$this->import('FormHoneypotSettingsForm');
-				$form = new FormHoneypotSettingsForm($this, $journal->getId());
+				$form = new FormHoneypotSettingsForm($this, $context->getId());
+
 				// This assigns select options
-				$templateMgr->assign('elementOptions', array_merge(array('' => ''), $this->availableElements));
+				$templateMgr->assign('elementList', array_merge(array('' => ''), $this->availableElements));
 				if (Request::getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
 						$form->execute();
-						$user =& Request::getUser();
-						import('classes.notification.NotificationManager');
-						$notificationManager = new NotificationManager();
-						$notificationManager->createTrivialNotification($user->getId());
-						Request::redirect(null, 'manager', 'plugins', 'generic');
-						return false;
-					} else {
-						$this->setBreadCrumbs(true);
-						$form->display();
+						return new JSONMessage(true);
 					}
 				} else {
-					$this->setBreadCrumbs(true);
 					$form->initData();
-					$form->display();
+//					$form->display();
 				}
-				return true;
+				return new JSONMessage(true, $form->fetch($request));
 			default:
 				// Unknown management verb
 				assert(false);
@@ -277,13 +224,59 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 	}
 
+    /**
+	 * Fetch the form.
+	 * @copydoc Form::fetch()
+	 */
+	function fetch($request) {
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign('pluginName', $this->_plugin->getName());
+/*
+        $chartTypes = array(
+			'bar' => __('plugins.generic.usageStats.settings.statsDisplayOptions.chartType.bar'),
+			'line' => __('plugins.generic.usageStats.settings.statsDisplayOptions.chartType.line')
+		);
+		$templateMgr->assign('chartTypes', $chartTypes);
+*/
+		return parent::fetch($request);
+	}
+
+	/**
+	 * @copydoc Plugin::getActions()
+	 */
+	function getActions($request, $verb) {
+		$router = $request->getRouter();
+		import('lib.pkp.classes.linkAction.request.AjaxModal');
+		return array_merge(
+			$this->getEnabled()?array(
+				new LinkAction(
+					'settings',
+					new AjaxModal(
+						$router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')),
+						$this->getDisplayName()
+					),
+					__('manager.plugins.settings'),
+					null
+				),
+			):array(),
+			parent::getActions($request, $verb)
+		);
+	}
+
+	/**
+	 * @copydoc PKPPlugin::getTemplatePath
+	 */
+	function getTemplatePath($inCore = false) {
+		return parent::getTemplatePath($inCore) . 'templates/';
+	}
+
 	/**
 	 * Hook callback: register output filter to add a new registration field
 	 * @see TemplateManager::display()
 	 */
 	function handleTemplateDisplay($hookName, $args) {
-		$templateMgr =& $args[0];
-		$template =& $args[1];
+		$templateMgr = $args[0];
+		$template = $args[1];
 
 		switch ($template) {
 			case 'user/register.tpl':
@@ -303,8 +296,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @see Form::readUserVars()
 	 */
 	function handleUserVar($hookName, $args) {
-		$form =& $args[0];
-		$vars =& $args[1];
+		$form = $args[0];
+		$vars = $args[1];
 		$journal =& Request::getJournal();
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'element');
@@ -328,7 +321,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$matches = array();
 			if (preg_match_all('/(\s+<tr valign="top">\s+<td class="label">)/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart)) {
 				$placement = rand(0, count($matches[0]));
-				$journal =& Request::getJournal();
+				$journal = Request::getJournal();
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1];

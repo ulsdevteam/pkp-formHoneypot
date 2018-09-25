@@ -35,25 +35,26 @@ class FormHoneypotSettingsForm extends Form {
 	 * @param $plugin object
 	 * @param $journalId int
 	 */
-	function FormHoneypotSettingsForm(&$plugin, $journalId) {
-		$this->journalId = $journalId;
-		$this->plugin =& $plugin;
-		
-		parent::Form($plugin->getTemplatePath() . 'settingsForm.tpl');
+	function __construct($plugin, $contextId) {
+		$this->_contextId = $contextId;
+		$this->_plugin = $plugin;
 
-		$this->addCheck(new FormValidatorCustom($this, 'minimumTime', 'optional', 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
-		$this->addCheck(new FormValidatorCustom($this, 'maximimTime', 'optional', 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
+		parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
+
+		$this->addCheck(new FormValidatorCustom($this, 'minimumTime', 'FORM_VALIDATOR_OPTIONAL_VALUE', 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
+		$this->addCheck(new FormValidatorCustom($this, 'maximimTime', 'FORM_VALIDATOR_OPTIONAL_VALUE', 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
 		$this->addCheck(new FormValidatorPost($this));
+		$this->addCheck(new FormValidatorCSRF($this));
 	}
 
 	/**
 	 * Initialize form data.
 	 */
 	function initData() {
-		$journalId = $this->journalId;
-		$plugin =& $this->plugin;
-		foreach (array_keys($this->plugin->settingNames) as $k) {
-			$this->_data[$k] = $plugin->getSetting($journalId, $k);
+		$plugin = $this->_plugin;
+
+        foreach (array_keys($this->_plugin->settingNames) as $k) {
+			$this->setData($k, $plugin->getSetting(CONTEXT_SITE, $k));
 		}
 	}
 
