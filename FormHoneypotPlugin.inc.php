@@ -21,18 +21,19 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 *  This array lists the possible input elements
 	 */
 	public $availableElements = array(
-			'middleName' => 'user.middleName',
-			'createNewElement' => 'plugins.generic.formHoneypot.manager.settings.createNewElement',
+		'middleName' => 'user.middleName',
+		'createNewElement' => 'plugins.generic.formHoneypot.manager.settings.createNewElement',
 	);
 
+	
 	/**
 	 * @var $settingNames array()
 	 * This array represents the fields on the settings form
 	 */
 	public $settingNames = array(
 		'element' => 'string',
-		'minimumTime' => 'int',
-		'maximumTime' => 'int',
+		'formHoneypotMinimumTime' => 'int',
+		'formHoneypotMaximumTime' => 'int',
 	);
 
 	/**
@@ -47,10 +48,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean True iff plugin initialized successfully; if false,
 	 * 	the plugin will not be registered.
 	 */
-	function register($category, $path) {
-		$success = parent::register($category, $path);
+//	function register($category, $path) {
+	function register($category, $path, $mainContextId = null) {
+		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
-		if ($success && $this->getEnabled()) {
+		if ($success && $this->getEnabled($mainContextId)) {
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertHtml'));
             // HookRegistry::register('TemplateManager::display', array($this, 'insertHtml'));
@@ -99,8 +101,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @param $params array of smarty and output objects
 	 * @return boolean
 	 */
-	function insertHtml($hookName, $params) {
-		$output = $params[2];
+	function insertHtml($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
 		
 		// journal is required to retrieve settings
@@ -114,7 +115,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$op = Request::getRequestedOp();
 		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
-			$output .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl');
+			// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
+			$templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl', null, null, true);
 		}
 		return false;
 	}
@@ -185,19 +187,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 	}
 
 	/**
-	 * Execute a management verb on this plugin
-	 * @param $verb string
-	 * @param $args array
-	 * @param $message string Result status message
-	 * @param $messageParams array Parameters for the message key
-	 * @return boolean
+	 * @copydoc Plugin::manage()
 	 */
 	function manage($args, $request) {
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
 				$context = $request->getContext();
 
-				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER);
+				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
 				$templateMgr = TemplateManager::getManager($request);
 				$templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
 
@@ -214,7 +211,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 					}
 				} else {
 					$form->initData();
-//					$form->display();
 				}
 				return new JSONMessage(true, $form->fetch($request));
 			default:
@@ -231,13 +227,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function fetch($request) {
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('pluginName', $this->_plugin->getName());
-/*
-        $chartTypes = array(
-			'bar' => __('plugins.generic.usageStats.settings.statsDisplayOptions.chartType.bar'),
-			'line' => __('plugins.generic.usageStats.settings.statsDisplayOptions.chartType.line')
-		);
-		$templateMgr->assign('chartTypes', $chartTypes);
-*/
+
 		return parent::fetch($request);
 	}
 
@@ -275,11 +265,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @see TemplateManager::display()
 	 */
 	function handleTemplateDisplay($hookName, $args) {
+		
 		$templateMgr = $args[0];
 		$template = $args[1];
 
 		switch ($template) {
-			case 'user/register.tpl':
+			case 'frontend/pages/userRegister.tpl':
 					$journal =& Request::getJournal();
 					$element = $this->getSetting($journal->getId(), 'element');
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
@@ -315,18 +306,23 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @param $templateMgr TemplateManager
 	 * @return $string
 	 */
-	function addCustomElement($output, &$templateMgr) {
-		if (preg_match('/<form id="registerForm"/', $output, $matches, PREG_OFFSET_CAPTURE)) {
-			$formStart = $matches[0][1];
+	function addCustomElement($output, $templateMgr) {
+		/* 
+		 * Testing if we have a form#register here? A way of confirming the template. (yes, a regular expression is not the ideal way to do this,
+		 * but with only one attribute, a regular expression should work okay here)
+		*/ 
+		if (preg_match('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE) === 1) {
+			preg_match_all('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart);
+			$formStart = $matches[0][0][1];
 			$matches = array();
-			if (preg_match_all('/(\s+<tr valign="top">\s+<td class="label">)/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart)) {
+			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart)) {
 				$placement = rand(0, count($matches[0]));
 				$journal = Request::getJournal();
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1];
 				$newOutput = substr($output, 0, $offset);
-				$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');;
+				$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');
 				$newOutput .= substr($output, $offset);
 				$output = $newOutput;
 			}

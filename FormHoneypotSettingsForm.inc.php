@@ -17,11 +17,11 @@ import('lib.pkp.classes.form.Form');
 
 class FormHoneypotSettingsForm extends Form {
 
-	/** @var $journalId int */
-	var $journalId;
+	/** @var $contextId int */
+	var $_contextId;
 
 	/** @var $plugin object */
-	var $plugin;
+	var $_plugin;
 
 	/** $var $elementNames array() */
 	var $elementNames = array(
@@ -41,8 +41,8 @@ class FormHoneypotSettingsForm extends Form {
 
 		parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
 
-		$this->addCheck(new FormValidatorCustom($this, 'minimumTime', 'FORM_VALIDATOR_OPTIONAL_VALUE', 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
-		$this->addCheck(new FormValidatorCustom($this, 'maximimTime', 'FORM_VALIDATOR_OPTIONAL_VALUE', 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
+		$this->addCheck(new FormValidatorCustom($this, 'minimumTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
+		$this->addCheck(new FormValidatorCustom($this, 'maximimTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
 		$this->addCheck(new FormValidatorPost($this));
 		$this->addCheck(new FormValidatorCSRF($this));
 	}
@@ -53,31 +53,40 @@ class FormHoneypotSettingsForm extends Form {
 	function initData() {
 		$plugin = $this->_plugin;
 
-        foreach (array_keys($this->_plugin->settingNames) as $k) {
-			$this->setData($k, $plugin->getSetting(CONTEXT_SITE, $k));
+		foreach (array_keys($this->_plugin->settingNames) as $k) {
+			$this->setData($k, $plugin->getSetting($this->_contextId, $k));
 		}
+	}
+
+	/**
+	 * Fetch the form.
+	 * @copydoc Form::fetch()
+	 */
+	function fetch($request) {
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign('pluginName', $this->_plugin->getName());
+		return parent::fetch($request);
 	}
 
 	/**
 	 * Assign form data to user-submitted data.
 	 */
 	function readInputData() {
-		$this->readUserVars(array_keys($this->plugin->settingNames));
+		$this->readUserVars(array_keys($this->_plugin->settingNames));
 	}
 
 	/**
 	 * Save settings.
 	 */
 	function execute() {
-		$plugin =& $this->plugin;
-		$journalId = $this->journalId;
-		foreach ($this->plugin->settingNames as $k => $v) {
-			$plugin->updateSetting($journalId, $k, $this->getData($k), $v);
+		$contextId = $this->_contextId;
+		foreach ($this->_plugin->settingNames as $k => $v) {
+			$this->_plugin->updateSetting($contextId, $k, $this->getData($k), $v);
 		}
 		if ($this->getData('element') === 'createNewElement') {
 			$element = $this->elementNames['s'][rand(0, count($this->elementNames['s'])-1)] . $this->elementNames['v'][rand(0, count($this->elementNames['v'])-1)] . $this->elementNames['p'][rand(0, count($this->elementNames['p'])-1)];
-			$plugin->updateSetting(
-				$journalId,
+			$this->_plugin->updateSetting(
+				$contextId,
 				'customElement',
 				$element,
 				'string'
