@@ -54,7 +54,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		if ($success && $this->getEnabled($mainContextId)) {
 			// Attach to the page footer
-			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertHtml'));
+			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
             // HookRegistry::register('TemplateManager::display', array($this, 'insertHtml'));
 			// Attach to the registration form validation
 			HookRegistry::register('registrationform::validate', array($this, 'validateHoneypot'));
@@ -101,7 +101,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @param $params array of smarty and output objects
 	 * @return boolean
 	 */
-	function insertHtml($hookName, $args) {
+	function insertTag($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
 		
 		// journal is required to retrieve settings
@@ -311,12 +311,13 @@ class FormHoneypotPlugin extends GenericPlugin {
 		 * Testing if we have a form#register here? A way of confirming the template. (yes, a regular expression is not the ideal way to do this,
 		 * but with only one attribute, a regular expression should work okay here)
 		*/ 
+		//$matches = array();
 		if (preg_match('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE) === 1) {
-			preg_match_all('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart);
-			$formStart = $matches[0][0][1];
+			//preg_match_all('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/);
+			//$formStart = $matches[0][0][1];
 			$matches = array();
-			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE, $formStart)) {
-				$placement = rand(0, count($matches[0]));
+			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
+				$placement = rand(0, count($matches[0])-1);
 				$journal = Request::getJournal();
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
