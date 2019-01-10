@@ -313,8 +313,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 		*/ 
 		//$matches = array();
 		if (preg_match('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE) === 1) {
-			//preg_match_all('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/);
-			//$formStart = $matches[0][0][1];
 			$matches = array();
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
