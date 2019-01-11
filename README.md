@@ -4,7 +4,7 @@ This plugin verifies new user registrations by creating a honeypot on the User R
 
 ## Requirements
 
-* OJS 2.4.x
+* OJS 3.1.x
 * PHP 5.3 or later
 
 ## Installation
