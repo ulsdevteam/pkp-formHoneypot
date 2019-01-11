@@ -288,7 +288,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
-		$vars = $args[1];
+		$vars =& $args[1];
 		$journal =& Request::getJournal();
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'element');
@@ -319,7 +319,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$journal = Request::getJournal();
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
-				$offset = $matches[0][$placement][1];
+				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
 				$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');
 				$newOutput .= substr($output, $offset);

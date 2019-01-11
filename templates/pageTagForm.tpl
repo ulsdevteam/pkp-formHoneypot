@@ -8,7 +8,11 @@
  *
  *}
 	<div class="{$element|escape}">
+		<label>
+			<span class="label">
+				{fieldLabel name="$element" key="plugins.generic.formHoneypot.leaveBlank" required="false"}
+			</span>
 		<input type="checkbox" name="{$element|escape}" id="{$element|escape}" value="1">
-		{fieldLabel name="$element" key="plugins.generic.formHoneypot.leaveBlank" required="true"}
+		</label>
 	</div>
 	

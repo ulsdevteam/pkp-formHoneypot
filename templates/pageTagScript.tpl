@@ -10,12 +10,13 @@
 <!-- Form Honeypot -->
 <script type="text/javascript">
 	// add a placeholder to text inputs
-	if (document.getElementById("{$element|escape}")) {literal}{{/literal}
-		document.getElementById("{$element|escape}").setAttribute("placeholder", "{translate key='plugins.generic.formHoneypot.leaveBlank'}");
-		document.getElementById("{$element|escape}").setAttribute("tabIndex", "-1");
-		document.getElementById("{$element|escape}").setAttribute("autocomplete", "off");
+	if ($("[name='{$element|escape}']").length === 1) {literal}{{/literal}
+		var element = $("[name='{$element|escape}']")[0];
+		element.setAttribute("placeholder", "{translate key='plugins.generic.formHoneypot.leaveBlank'}");
+		element.setAttribute("tabIndex", "-1");
+		element.setAttribute("autocomplete", "off");
 		// hide the parent's parent element (input's div)
-		document.getElementById("{$element|escape}").parentNode.style.display = 'none';
+		element.parentNode.parentNode.style.display = 'none';
 	{literal}}{/literal}
 </script>
 <!-- /Form Honeypot -->
