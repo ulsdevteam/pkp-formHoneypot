@@ -129,8 +129,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$journal = Request::getJournal();
 		if (isset($journal)) {
 			$element = $this->getElementSetting($journal->getId());
-			$minTime = $this->getSetting($journal->getId(), 'minimumTime');
-			$maxTime = $this->getSetting($journal->getId(), 'maximumTime');
+			$minTime = $this->getSetting($journal->getId(), 'formHoneypotMinimumTime');
+			$maxTime = $this->getSetting($journal->getId(), 'formHoneypotMaximumTime');
 		}
 		$form = $params[0];
 		// If we have an element selected as a honeypot, check it 
