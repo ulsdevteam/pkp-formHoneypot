@@ -48,14 +48,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean True iff plugin initialized successfully; if false,
 	 * 	the plugin will not be registered.
 	 */
-//	function register($category, $path) {
 	function register($category, $path, $mainContextId = null) {
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		if ($success && $this->getEnabled($mainContextId)) {
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
-            // HookRegistry::register('TemplateManager::display', array($this, 'insertHtml'));
 			// Attach to the registration form validation
 			HookRegistry::register('registrationform::validate', array($this, 'validateHoneypot'));
 			// Attach to the registration form display
@@ -175,8 +173,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function initializeTimer($hookName) {
-		// remember when this form was initialized for the user
-		// we'll store it as a user setting on form execution
+		/*
+		 * remember when this form was initialized for the user
+		 * we'll store it as a user setting on form execution
+		 */
 		$sessionManager =& SessionManager::getManager();
 		$session =& $sessionManager->getUserSession();
 		$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
@@ -311,7 +311,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 		 * Testing if we have a form#register here? A way of confirming the template. (yes, a regular expression is not the ideal way to do this,
 		 * but with only one attribute, a regular expression should work okay here)
 		*/ 
-		//$matches = array();
 		if (preg_match('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE) === 1) {
 			$matches = array();
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
