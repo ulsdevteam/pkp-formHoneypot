@@ -21,6 +21,6 @@ When a new user registers within a journal context, the field you select will be
 
 ## Author / License
 
-Written by Clinton Graham for the [University of Pittsburgh](http://www.pitt.edu).  Copyright (c) University of Pittsburgh.
+Written by Clinton Graham and Alex Wreschnig for the [University of Pittsburgh](http://www.pitt.edu).  Copyright (c) University of Pittsburgh.
 
 Released under a license of GPL v2 or later.
