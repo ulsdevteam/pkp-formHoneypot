@@ -288,7 +288,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
-//		$vars =& $args[1];
 		$journal =& Request::getJournal();
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'element');
