@@ -17,21 +17,10 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 class FormHoneypotPlugin extends GenericPlugin {
 
 	/**
-	 * @var $availableElements array()
-	 *  This array lists the possible input elements
-	 */
-	public $availableElements = array(
-		'middleName' => 'user.middleName',
-		'createNewElement' => 'plugins.generic.formHoneypot.manager.settings.createNewElement',
-	);
-
-	
-	/**
 	 * @var $settingNames array()
 	 * This array represents the fields on the settings form
 	 */
 	public $settingNames = array(
-		'element' => 'string',
 		'formHoneypotMinimumTime' => 'int',
 		'formHoneypotMaximumTime' => 'int',
 	);
@@ -42,6 +31,13 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	public $formTimerSetting = 'registrationTimer';
 
+	/** $var $elementNames array() */
+	var $elementNames = array(
+		's' => array('user', 'admin', 'form', 'tool', 'system'),
+		'v' => array('Confirm', 'Validate', 'Assign', 'Agree', 'Add'),
+		'p' => array('Terms', 'Options', 'Activity', 'Access', 'URL', 'Link')
+	);
+
 	/**
 	 * Called as a plugin is registered to the registry
 	 * @param $category String Name of category plugin was registered to
@@ -51,7 +47,13 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function register($category, $path, $mainContextId = null) {
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+		$request = Application::getRequest();
+		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
+
 		if ($success && $this->getEnabled($mainContextId)) {
+			$request = Application::getRequest();
+            $contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
+			
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
 			// Attach to the registration form validation
@@ -61,6 +63,16 @@ class FormHoneypotPlugin extends GenericPlugin {
 			// Add custom field if desired
 			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
 			HookRegistry::register('registrationform::readuservars', array($this, 'handleUserVar'));
+			$element = $this->getSetting($contextId, 'customElement');
+			if(!$element) {
+				// generate new form field
+				$this->updateSetting($contextId, 'customElement', $this->generateElementName());
+			}
+		} else {
+			if(element) {
+				// clear form field
+				$this->updateSetting($contextId, 'customElement', "");
+			}
 		}
 		return $success;
 	}
@@ -103,10 +115,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$templateMgr = TemplateManager::getManager();
 		
 		// journal is required to retrieve settings
-		$currentJournal = $templateMgr->get_template_vars('currentJournal');
+		$journal = $templateMgr->get_template_vars('currentJournal');
 		// element is required to set the honeypot
-		if (isset($currentJournal)) {
-			$element = $this->getElementSetting($currentJournal->getId());
+		if (isset($journal)) {
+			$element = $this->getSetting($journal->getId(), 'customElement');
 		}
 		// only operate on user registration
 		$page = Request::getRequestedPage();
@@ -128,7 +140,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function validateHoneypot($hookName, $params) {
 		$journal = Request::getJournal();
 		if (isset($journal)) {
-			$element = $this->getElementSetting($journal->getId());
+			$element = $this->getSetting($journal->getId(), 'customElement');
 			$minTime = $this->getSetting($journal->getId(), 'formHoneypotMinimumTime');
 			$maxTime = $this->getSetting($journal->getId(), 'formHoneypotMaximumTime');
 		}
@@ -142,7 +154,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			}
 			// If not empty, flag an error
 			if (!empty($value)) {
-				$elementName = (isset($this->availableElements[$element]) ? $this->availableElements[$element] : 'plugins.generic.formHoneypot.leaveBlank');
+				$elementName = 'plugins.generic.formHoneypot.leaveBlank';
 				$message = __('plugins.generic.formHoneypot.doNotUseThisField', array('element' => __($elementName)));
 				$form->addError(
 					$element,
@@ -152,10 +164,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 		if ($form && $form->isValid() && ($minTime > 0 || $maxTime > 0)) {
 			// Get the initial access to this form within this session
-			$sessionManager =& SessionManager::getManager();
-			$session =& $sessionManager->getUserSession();
+			$sessionManager = SessionManager::getManager();
+			$session = $sessionManager->getUserSession();
 			$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
-			if (!$started || ($minTime > 0 && time() - $started < $minTime) || ($maxTime > 0 && time() - $started > $maxTime)) {
+			$current = time();
+			if (!$started || ($minTime > 0 && current - $started < $minTime) || ($maxTime > 0 && current - $started > $maxTime)) {
 				$form->addError(
 					'username',
 					__('plugins.generic.formHoneypot.invalidSessionTime')
@@ -202,7 +215,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$form = new FormHoneypotSettingsForm($this, $context->getId());
 
 				// This assigns select options
-				$templateMgr->assign('elementList', array_merge(array('' => ''), $this->availableElements));
 				if (Request::getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
@@ -272,9 +284,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
 					$journal =& Request::getJournal();
-					$element = $this->getSetting($journal->getId(), 'element');
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
-					if ($element === 'createNewElement' && !empty($customElement)) {
+					if (!empty($customElement)) {
 						$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
 					}
 				break;
@@ -288,13 +299,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
-		$journal =& Request::getJournal();
+		$journal = Request::getJournal();
 		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'element');
-			if ($element === 'createNewElement') {
-				$element = $this->getElementSetting($journal->getId());
-				$args[1][] = $element;
-			}
+			$element = $this->getSetting($journal->getId(), 'customElement');
+			$args[1][] = $element;
 		}
 		return false;
 	}
@@ -329,17 +337,15 @@ class FormHoneypotPlugin extends GenericPlugin {
 	}
 
 	/**
-	 * Get the actual name of the honeypot field
-	 * @param $journalId int Journal ID
+	 * Output filter to create a new element in a registration form
+	 * @param $output string
+	 * @param $templateMgr TemplateManager
 	 * @return $string
 	 */
-	function getElementSetting($journalId) {
-		$element = $this->getSetting($journalId, 'element');
-		$customElement = $this->getSetting($journalId, 'customElement');
-		if ($element === 'createNewElement' && !empty($customElement)) {
-			$element = $customElement;
-		}
-		return $element;
+	function generateElementName () {
+		return $this->elementNames['s'][rand(0, count($this->elementNames['s'])-1)] .
+				$this->elementNames['v'][rand(0, count($this->elementNames['v'])-1)] .
+				$this->elementNames['p'][rand(0, count($this->elementNames['p'])-1)];
 	}
 }
 ?>

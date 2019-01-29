@@ -23,12 +23,6 @@ class FormHoneypotSettingsForm extends Form {
 	/** @var $plugin object */
 	var $_plugin;
 
-	/** $var $elementNames array() */
-	var $elementNames = array(
-		's' => array('user', 'admin', 'form', 'tool', 'system'),
-		'v' => array('Confirm', 'Validate', 'Assign', 'Agree', 'Add'),
-		'p' => array('Terms', 'Options', 'Activity', 'Access')
-	);
 
 	/**
 	 * Constructor
@@ -82,15 +76,6 @@ class FormHoneypotSettingsForm extends Form {
 		$contextId = $this->_contextId;
 		foreach ($this->_plugin->settingNames as $k => $v) {
 			$this->_plugin->updateSetting($contextId, $k, $this->getData($k), $v);
-		}
-		if ($this->getData('element') === 'createNewElement') {
-			$element = $this->elementNames['s'][rand(0, count($this->elementNames['s'])-1)] . $this->elementNames['v'][rand(0, count($this->elementNames['v'])-1)] . $this->elementNames['p'][rand(0, count($this->elementNames['p'])-1)];
-			$this->_plugin->updateSetting(
-				$contextId,
-				'customElement',
-				$element,
-				'string'
-			);
 		}
 	}
 	

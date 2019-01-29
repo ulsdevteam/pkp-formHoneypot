@@ -20,7 +20,6 @@
 
 	<div id="description">{translate key="plugins.generic.formHoneypot.manager.settings.description"}</div>
 	{fbvFormArea id="settingsFormArea" description="plugins.generic.formHoneypot.manager.settings.description"}
-        {fbvElement type="select" id="element" from=$elementList selected=$element label="plugins.generic.formHoneypot.manager.settings.element" size=$fbvStyles.size.SMALL inline="inline"}
 		{fbvElement type="text" id="formHoneypotMinimumTime" name="formHoneypotMinimumTime" value="$formHoneypotMinimumTime" label="plugins.generic.formHoneypot.manager.settings.minimumTime" size=$fbvStyles.size.SMALL inline="inline"}
 		{fbvElement type="text" id="formHoneypotMaximumTime" name="formHoneypotMaximumTime" value="$formHoneypotMaximumTime" label="plugins.generic.formHoneypot.manager.settings.maximumTime" size=$fbvStyles.size.SMALL inline="inline"}
 	{/fbvFormArea}
