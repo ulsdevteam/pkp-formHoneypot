@@ -121,12 +121,20 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 		}
 		// only operate on user registration
-		$page = Request::getRequestedPage();
-		$op = Request::getRequestedOp();
+		$request = Application::get()->getRequest();
+		$page = $request->getRequestedPage();
+		$op = $request->getRequestedOp();
 		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
-			// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
-			$templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl', null, null, true);
+			if (method_exists($this, 'getTemplateResource')) {
+				// OJS 3.1.2 and later
+				// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
+				$templateMgr->fetch($this->getTemplateResource('pageTagScript.tpl'), null, null, true);
+			} else {
+				// OJS 3.1.1 and earlier
+				// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
+				$templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl', null, null, true);
+			}
 		}
 		return false;
 	}
@@ -138,7 +146,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function validateHoneypot($hookName, $params) {
-		$journal = Request::getJournal();
+		$request = Application::get()->getRequest();
+		$journal = $request->getJournal();
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 			$minTime = $this->getSetting($journal->getId(), 'formHoneypotMinimumTime');
@@ -215,7 +224,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$form = new FormHoneypotSettingsForm($this, $context->getId());
 
 				// This assigns select options
-				if (Request::getUserVar('save')) {
+				if ($request->getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
 						$form->execute();
@@ -269,7 +278,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		return parent::getTemplatePath($inCore) . 'templates/';
+//		return parent::getTemplatePath($inCore) . 'templates/';
+		return parent::getTemplatePath($inCore) . '/';
 	}
 
 	/**
@@ -280,13 +290,15 @@ class FormHoneypotPlugin extends GenericPlugin {
 		
 		$templateMgr = $args[0];
 		$template = $args[1];
+		$request = Application::get()->getRequest();
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$journal =& Request::getJournal();
+					$journal =& $request->getJournal();
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
 					if (!empty($customElement)) {
-						$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
+//						$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
+						$templateMgr->registerFilter('output', array($this, 'addCustomElement'));
 					}
 				break;
 		}
@@ -299,7 +311,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
-		$journal = Request::getJournal();
+		$request = Application::get()->getRequest();
+		$journal = $request->getJournal();
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 			$args[1][] = $element;
@@ -322,7 +335,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$matches = array();
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
-				$journal = Request::getJournal();
+				$request = Application::get()->getRequest();
+				$journal = $request->getJournal();
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
@@ -332,7 +346,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$output = $newOutput;
 			}
 		}
-		$templateMgr->unregister_outputfilter('addCustomElement');
+		$templateMgr->unregisterFilter('output', array($this, 'addCustomElement'));
 		return $output;
 	}
 
