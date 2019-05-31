@@ -68,6 +68,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				// generate new form field
 				$this->updateSetting($contextId, 'customElement', $this->generateElementName());
 			}
+
 		} else {
 			if(element) {
 				// clear form field
@@ -128,10 +129,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$templateMgr->assign('element', $element);
 			if (method_exists($this, 'getTemplateResource')) {
 				// OJS 3.1.2 and later
-				// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
-				$templateMgr->fetch($this->getTemplateResource('pageTagScript.tpl'), null, null, true);
+				$output =& $args[2];
+				$output .= $templateMgr->fetch($this->getTemplateResource('pageTagScript.tpl'));
 			} else {
-				// OJS 3.1.1 and earlier
+				// OJS 3.1.1 and earlier 3.x releases
 				// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
 				$templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl', null, null, true);
 			}
@@ -177,7 +178,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$session = $sessionManager->getUserSession();
 			$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
 			$current = time();
-			if (!$started || ($minTime > 0 && current - $started < $minTime) || ($maxTime > 0 && current - $started > $maxTime)) {
+			if (!$started || ($minTime > 0 && $current - $started < $minTime) || ($maxTime > 0 && $current - $started > $maxTime)) {
 				$form->addError(
 					'username',
 					__('plugins.generic.formHoneypot.invalidSessionTime')
@@ -278,8 +279,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-//		return parent::getTemplatePath($inCore) . 'templates/';
-		return parent::getTemplatePath($inCore) . '/';
+		// getTemplatePath is called on plugin registration and needs to be updated for 3.2.
+		if (method_exists($this, 'getTemplateResource')) {
+			// OJS 3.1.2 and later
+			return parent::getTemplatePath($inCore) . DIRECTORY_SEPARATOR;
+		} else {
+			// OJS 3.1.1 and earlier 3.x releases
+			return parent::getTemplatePath($inCore) . 'templates' . DIRECTORY_SEPARATOR;
+		}
 	}
 
 	/**
@@ -294,11 +301,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$journal =& $request->getJournal();
+					$journal = $request->getJournal();
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
 					if (!empty($customElement)) {
-//						$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
-						$templateMgr->registerFilter('output', array($this, 'addCustomElement'));
+						$templateMgr->registerFilter("output", array($this, 'addCustomElement'));
 					}
 				break;
 		}
@@ -341,12 +347,19 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
-				$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');
+				
+				if (method_exists($this, 'getTemplateResource')) {
+					// OJS 3.1.2 and later
+					$newOutput .= $templateMgr->fetch($this->getTemplateResource('pageTagForm.tpl'));
+				} else {
+					// OJS 3.1.1 and earlier
+					$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');
+				}
+
 				$newOutput .= substr($output, $offset);
 				$output = $newOutput;
 			}
 		}
-		$templateMgr->unregisterFilter('output', array($this, 'addCustomElement'));
 		return $output;
 	}
 
