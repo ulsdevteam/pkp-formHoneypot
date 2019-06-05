@@ -344,10 +344,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
 					$journal = $this->_backwardsCompatibilityRetrieveJournal();
+					$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
 					if (!empty($customElement)) {
-						if(method_exists($templateMgr, 'registerFilter')) {
+						if($versionCompare >= 0) {
 							// OJS 3.1.2 and later (Smarty 3)
 							$templateMgr->registerFilter("output", array($this, 'addCustomElement'));
 						} else {
