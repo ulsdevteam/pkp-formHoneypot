@@ -53,6 +53,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * 	the plugin will not be registered.
 	 */
 	function register($category, $path, $mainContextId = null) {
+		// Setting version information for backwards compatibility in other areas of the plugin
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$this->currentOjsVersion = $versionDao->getCurrentVersion()->getVersionString();
+
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		
@@ -60,9 +64,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
 
 		if ($success && $this->getEnabled($mainContextId)) {
-			// Setting version information for backwards compatibility in other areas of the plugin
-			$versionDao = DAORegistry::getDAO('VersionDAO');
-			$this->currentOjsVersion = $versionDao->getCurrentVersion()->getVersionString();
 			
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
