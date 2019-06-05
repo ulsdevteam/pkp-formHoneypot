@@ -24,6 +24,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 		'formHoneypotMinimumTime' => 'int',
 		'formHoneypotMaximumTime' => 'int',
 	);
+	/**
+	 * @var $currentOjsVersion string
+	 * 
+	 * This string holds the output of getVersionString() from the VersionDAO
+	 * object. It's built in $this->register() and is used throughout the plugin
+	 * to support backwards compatibility with older versions of OJS.
+	 */
+	public $currentOjsVersion = 0;
 
 	/**
 	 * @var $formTimerSetting string
@@ -47,12 +55,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function register($category, $path, $mainContextId = null) {
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+		
 		$request = Application::getRequest();
 		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
 
 		if ($success && $this->getEnabled($mainContextId)) {
-			$request = Application::getRequest();
-            $contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
+			// Setting version information for backwards compatibility in other areas of the plugin
+			$versionDao = DAORegistry::getDAO('VersionDAO');
+			$this->currentOjsVersion = $versionDao->getCurrentVersion()->getVersionString();
 			
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
@@ -105,6 +115,25 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 		return parent::getManagementVerbs($verbs);
 	}
+	
+	/**
+	 * Backwards-compatible helper function for loading in the journal object
+	 * across multiple releases of OJS3
+	 * @return Journal object
+	 */
+	function _backwardsCompatibilityRetrieveJournal() {
+		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+
+		if($versionCompare >= 0) {
+			// OJS 3.1.2 and later
+			$request = Application::get()->getRequest();
+			$journal = $request->getJournal();
+		} else {
+			// OJS 3.1.1 and earlier
+			$journal = Request::getJournal();
+		}
+		return $journal;
+	}
 
 	/**
 	 * Insert Form Honeypot page tag to footer, if page is the user registration
@@ -116,9 +145,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$templateMgr = TemplateManager::getManager();
 
 		// Testing version once for conditionals below
-		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
-		$versionCompare = strcmp($currentVersion, "3.1.2");
+		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 
 		// journal is required to retrieve settings
 		$journal = $templateMgr->get_template_vars('currentJournal');
@@ -161,19 +188,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function validateHoneypot($hookName, $params) {
-
-		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
-		$versionCompare = strcmp($currentVersion, "3.1.2");
-
-		if($versionCompare >= 0) {
-			// OJS 3.1.2 and later
-			$request = Application::get()->getRequest();
-			$journal = $request->getJournal();
-		} else {
-			// OJS 3.1.1 and earlier
-			$journal = Request::getJournal();
-		}
+		
+		$journal = $this->_backwardsCompatibilityRetrieveJournal();
 
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
@@ -305,9 +321,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
-		$versionCompare = strcmp($currentVersion, "3.1.2");
+		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 
 		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
@@ -329,18 +343,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$versionDao = DAORegistry::getDAO('VersionDAO');
-					$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
-					$versionCompare = strcmp($currentVersion, "3.1.2");
+					$journal = $this->_backwardsCompatibilityRetrieveJournal();
 
-					if($versionCompare >= 0) {
-						// OJS 3.1.2 and later
-						$request = Application::get()->getRequest();
-						$journal = $request->getJournal();
-					} else {
-						// OJS 3.1.1 and earlier
-						$journal = Request::getJournal();
-					}
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
 					if (!empty($customElement)) {
 						if(method_exists($templateMgr, 'registerFilter')) {
@@ -363,18 +367,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
 
-		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
-		$versionCompare = strcmp($currentVersion, "3.1.2");
+		$journal = $this->_backwardsCompatibilityRetrieveJournal();
 
-		if($versionCompare >= 0) {
-			// OJS 3.1.2 and later
-			$request = Application::get()->getRequest();
-			$journal = $request->getJournal();
-		} else {
-			// OJS 3.1.1 and earlier
-			$journal = Request::getJournal();
-		}
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 			$args[1][] = $element;
@@ -398,18 +392,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
 				
-				$versionDao = DAORegistry::getDAO('VersionDAO');
-				$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
-				$versionCompare = strcmp($currentVersion, "3.1.2");
-
-				if($versionCompare >= 0) {
-					// OJS 3.1.2 and later
-					$request = Application::get()->getRequest();
-					$journal = $request->getJournal();
-				} else {
-					// OJS 3.1.1 and earlier
-					$journal = Request::getJournal();
-				}
+				$journal = $this->_backwardsCompatibilityRetrieveJournal();
+				$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
