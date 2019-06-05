@@ -114,7 +114,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function insertTag($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
-		
+
+		// Testing version once for conditionals below
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
+		$versionCompare = strcmp($currentVersion, "3.1.2");
+
 		// journal is required to retrieve settings
 		$journal = $templateMgr->get_template_vars('currentJournal');
 		// element is required to set the honeypot
@@ -122,12 +127,21 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 		}
 		// only operate on user registration
-		$request = Application::get()->getRequest();
-		$page = $request->getRequestedPage();
-		$op = $request->getRequestedOp();
+		if($versionCompare >= 0) {
+			// OJS 3.1.2 and later
+			$request = Application::get()->getRequest();
+			$page = $request->getRequestedPage();
+			$op = $request->getRequestedOp();
+		} else {
+			// OJS 3.1.1 and earlier
+			$page = Request::getRequestedPage();
+			$op = Request::getRequestedOp();
+		}
+		
 		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
-			if (method_exists($this, 'getTemplateResource')) {
+
+			if($versionCompare >= 0) {
 				// OJS 3.1.2 and later
 				$output =& $args[2];
 				$output .= $templateMgr->fetch($this->getTemplateResource('pageTagScript.tpl'));
@@ -147,8 +161,20 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function validateHoneypot($hookName, $params) {
-		$request = Application::get()->getRequest();
-		$journal = $request->getJournal();
+
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
+		$versionCompare = strcmp($currentVersion, "3.1.2");
+
+		if($versionCompare >= 0) {
+			// OJS 3.1.2 and later
+			$request = Application::get()->getRequest();
+			$journal = $request->getJournal();
+		} else {
+			// OJS 3.1.1 and earlier
+			$journal = Request::getJournal();
+		}
+
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 			$minTime = $this->getSetting($journal->getId(), 'formHoneypotMinimumTime');
@@ -279,8 +305,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		// getTemplatePath is called on plugin registration and needs to be updated for 3.2.
-		if (method_exists($this, 'getTemplateResource')) {
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
+		$versionCompare = strcmp($currentVersion, "3.1.2");
+
+		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
 			return parent::getTemplatePath($inCore) . DIRECTORY_SEPARATOR;
 		} else {
@@ -297,14 +326,30 @@ class FormHoneypotPlugin extends GenericPlugin {
 		
 		$templateMgr = $args[0];
 		$template = $args[1];
-		$request = Application::get()->getRequest();
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$journal = $request->getJournal();
+					$versionDao = DAORegistry::getDAO('VersionDAO');
+					$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
+					$versionCompare = strcmp($currentVersion, "3.1.2");
+
+					if($versionCompare >= 0) {
+						// OJS 3.1.2 and later
+						$request = Application::get()->getRequest();
+						$journal = $request->getJournal();
+					} else {
+						// OJS 3.1.1 and earlier
+						$journal = Request::getJournal();
+					}
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
 					if (!empty($customElement)) {
-						$templateMgr->registerFilter("output", array($this, 'addCustomElement'));
+						if(method_exists($templateMgr, 'registerFilter')) {
+							// OJS 3.1.2 and later (Smarty 3)
+							$templateMgr->registerFilter("output", array($this, 'addCustomElement'));
+						} else {
+							// OJS 3.1.1 and earlier (Smarty 2)
+							$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
+						}
 					}
 				break;
 		}
@@ -317,8 +362,19 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
-		$request = Application::get()->getRequest();
-		$journal = $request->getJournal();
+
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
+		$versionCompare = strcmp($currentVersion, "3.1.2");
+
+		if($versionCompare >= 0) {
+			// OJS 3.1.2 and later
+			$request = Application::get()->getRequest();
+			$journal = $request->getJournal();
+		} else {
+			// OJS 3.1.1 and earlier
+			$journal = Request::getJournal();
+		}
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 			$args[1][] = $element;
@@ -341,14 +397,26 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$matches = array();
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
-				$request = Application::get()->getRequest();
-				$journal = $request->getJournal();
+				
+				$versionDao = DAORegistry::getDAO('VersionDAO');
+				$currentVersion = $versionDao->getCurrentVersion()->getVersionString();
+				$versionCompare = strcmp($currentVersion, "3.1.2");
+
+				if($versionCompare >= 0) {
+					// OJS 3.1.2 and later
+					$request = Application::get()->getRequest();
+					$journal = $request->getJournal();
+				} else {
+					// OJS 3.1.1 and earlier
+					$journal = Request::getJournal();
+				}
+
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
 				
-				if (method_exists($this, 'getTemplateResource')) {
+				if($versionCompare >= 0) {
 					// OJS 3.1.2 and later
 					$newOutput .= $templateMgr->fetch($this->getTemplateResource('pageTagForm.tpl'));
 				} else {
