@@ -123,7 +123,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return Journal object
 	 */
 	function _backwardsCompatibilityRetrieveJournal() {
-		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+		$versionCompare = strcmp($this->currentOjsVersion, "3.2");
 
 		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
@@ -145,18 +145,18 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function insertTag($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
 
-		// Testing version once for conditionals below
-		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
-
 		// journal is required to retrieve settings
 		$journal = $templateMgr->get_template_vars('currentJournal');
 		// element is required to set the honeypot
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
 		}
+
+		// Testing version once for conditionals below
+		$versionCompare = strcmp($this->currentOjsVersion, "3.2");
 		// only operate on user registration
 		if($versionCompare >= 0) {
-			// OJS 3.1.2 and later
+			// OJS 3.2 and later
 			$request = Application::get()->getRequest();
 			$page = $request->getRequestedPage();
 			$op = $request->getRequestedOp();
@@ -169,6 +169,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
 
+			// Testing version once for conditionals below
+			$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 			if($versionCompare >= 0) {
 				// OJS 3.1.2 and later
 				$output =& $args[2];
