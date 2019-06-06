@@ -130,7 +130,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$request = Application::get()->getRequest();
 			$journal = $request->getJournal();
 		} else {
-			// OJS 3.1.1 and earlier
+			// OJS 3.1.2 and earlier
 			$journal = Request::getJournal();
 		}
 		return $journal;
