@@ -126,7 +126,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$versionCompare = strcmp($this->currentOjsVersion, "3.2");
 
 		if($versionCompare >= 0) {
-			// OJS 3.1.2 and later
+			// OJS 3.2 and later
 			$request = Application::get()->getRequest();
 			$journal = $request->getJournal();
 		} else {
