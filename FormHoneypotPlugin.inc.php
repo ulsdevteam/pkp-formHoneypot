@@ -118,25 +118,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 	}
 	
 	/**
-	 * Backwards-compatible helper function for loading in the journal object
-	 * across multiple releases of OJS3
-	 * @return Journal object
-	 */
-	function _backwardsCompatibilityRetrieveJournal() {
-		$versionCompare = strcmp($this->currentOjsVersion, "3.2");
-
-		if($versionCompare >= 0) {
-			// OJS 3.2 and later
-			$request = Application::get()->getRequest();
-			$journal = $request->getJournal();
-		} else {
-			// OJS 3.1.2 and earlier
-			$journal = Request::getJournal();
-		}
-		return $journal;
-	}
-
-	/**
 	 * Insert Form Honeypot page tag to footer, if page is the user registration
 	 * @param $hookName string Name of hook calling function
 	 * @param $params array of smarty and output objects
@@ -147,6 +128,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		// journal is required to retrieve settings
 		$journal = $templateMgr->get_template_vars('currentJournal');
+		
 		// element is required to set the honeypot
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
@@ -161,7 +143,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$page = $request->getRequestedPage();
 			$op = $request->getRequestedOp();
 		} else {
-			// OJS 3.1.1 and earlier
+			// OJS 3.1.2 and earlier
 			$page = Request::getRequestedPage();
 			$op = Request::getRequestedOp();
 		}
@@ -192,7 +174,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function validateHoneypot($hookName, $params) {
 		
-		$journal = $this->_backwardsCompatibilityRetrieveJournal();
+		$templateMgr = TemplateManager::getManager();
+		$journal = $templateMgr->get_template_vars('currentJournal');
 
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
@@ -341,12 +324,15 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleTemplateDisplay($hookName, $args) {
 		
-		$templateMgr = $args[0];
+		// Could get this from $args[0] in this case but the result is identical
+		// and this is less likely to change
+		$templateMgr = TemplateManager::getManager();
+		
 		$template = $args[1];
+		$journal = $templateMgr->get_template_vars('currentJournal');
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$journal = $this->_backwardsCompatibilityRetrieveJournal();
 					$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
@@ -371,7 +357,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
 
-		$journal = $this->_backwardsCompatibilityRetrieveJournal();
+		$templateMgr = TemplateManager::getManager();
+		$journal = $templateMgr->get_template_vars('currentJournal');
 
 		if (isset($journal)) {
 			$element = $this->getSetting($journal->getId(), 'customElement');
@@ -396,7 +383,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
 				
-				$journal = $this->_backwardsCompatibilityRetrieveJournal();
+				$templateMgr = TemplateManager::getManager();
+				$journal = $journal = $templateMgr->get_template_vars('currentJournal');
 				$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
 
 				$element = $this->getSetting($journal->getId(), 'customElement');
