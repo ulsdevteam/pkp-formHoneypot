@@ -55,7 +55,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function register($category, $path, $mainContextId = null) {
 		// Setting version information for backwards compatibility in other areas of the plugin
 		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$this->currentOjsVersion = $versionDao->getCurrentVersion()->getVersionString();
+//		$this->currentOjsVersion = $versionDao->getCurrentVersion()->getVersionString();
+		$this->currentOjsVersion = $versionDao->getCurrentVersion();
 
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
@@ -135,7 +136,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 
 		// Testing version once for conditionals below
-		$versionCompare = strcmp($this->currentOjsVersion, "3.2");
+//		$versionCompare = strcmp($this->currentOjsVersion, "3.2");
+		$versionCompare = $this->currentOjsVersion->compare("3.2");
 		// only operate on user registration
 		if($versionCompare >= 0) {
 			// OJS 3.2 and later
@@ -152,7 +154,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$templateMgr->assign('element', $element);
 
 			// Testing version once for conditionals below
-			$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+//			$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+			$versionCompare = $this->currentOjsVersion->compare("3.1.2");
 			if($versionCompare >= 0) {
 				// OJS 3.1.2 and later
 				$output =& $args[2];
@@ -307,7 +310,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+//		$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+		$versionCompare = $this->currentOjsVersion->compare("3.1.2");
 
 		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
@@ -333,7 +337,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+					//$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+					$versionCompare = $this->currentOjsVersion->compare("3.1.2");
 
 					$customElement = $this->getSetting($journal->getId(), 'customElement');
 					if (!empty($customElement)) {
@@ -385,7 +390,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 				
 				$templateMgr = TemplateManager::getManager();
 				$journal = $journal = $templateMgr->get_template_vars('currentJournal');
-				$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+				//$versionCompare = strcmp($this->currentOjsVersion, "3.1.2");
+				$versionCompare = $this->currentOjsVersion->compare("3.1.2");
 
 				$element = $this->getSetting($journal->getId(), 'customElement');
 				$templateMgr->assign('element', $element);
