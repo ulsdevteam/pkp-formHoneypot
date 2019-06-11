@@ -80,11 +80,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$this->updateSetting($contextId, 'customElement', $this->generateElementName());
 			}
 
-		} else {
-			if(element) {
-				// clear form field
-				$this->updateSetting($contextId, 'customElement', "");
-			}
 		}
 		return $success;
 	}
