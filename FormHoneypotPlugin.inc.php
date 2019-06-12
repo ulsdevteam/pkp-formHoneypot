@@ -122,11 +122,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$templateMgr = TemplateManager::getManager();
 
 		// journal is required to retrieve settings
-		$journal = $templateMgr->get_template_vars('currentJournal');
+		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
 		
 		// element is required to set the honeypot
-		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'customElement');
+		if (isset($contextID)) {
+			$element = $this->getSetting($contextID, 'customElement');
 		}
 
 		// Testing version once for conditionals below
@@ -170,12 +170,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function validateHoneypot($hookName, $params) {
 		
 		$templateMgr = TemplateManager::getManager();
-		$journal = $templateMgr->get_template_vars('currentJournal');
+		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
 
-		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'customElement');
-			$minTime = $this->getSetting($journal->getId(), 'formHoneypotMinimumTime');
-			$maxTime = $this->getSetting($journal->getId(), 'formHoneypotMaximumTime');
+		if (isset($contextID)) {
+			$element = $this->getSetting($contextID, 'customElement');
+			$minTime = $this->getSetting($contextID, 'formHoneypotMinimumTime');
+			$maxTime = $this->getSetting($contextID, 'formHoneypotMaximumTime');
 		}
 		$form = $params[0];
 		// If we have an element selected as a honeypot, check it 
@@ -324,13 +324,13 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$templateMgr = TemplateManager::getManager();
 		
 		$template = $args[1];
-		$journal = $templateMgr->get_template_vars('currentJournal');
+		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
 					$versionCompare = $this->currentOjsVersion->compare("3.1.2");
 
-					$customElement = $this->getSetting($journal->getId(), 'customElement');
+					$customElement = $this->getSetting($contextID, 'customElement');
 					if (!empty($customElement)) {
 						if($versionCompare >= 0) {
 							// OJS 3.1.2 and later (Smarty 3)
@@ -353,10 +353,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$form = $args[0];
 
 		$templateMgr = TemplateManager::getManager();
-		$journal = $templateMgr->get_template_vars('currentJournal');
+		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
 
-		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'customElement');
+		if (isset($contextID)) {
+			$element = $this->getSetting($contextID, 'customElement');
 			$args[1][] = $element;
 		}
 		return false;
@@ -379,10 +379,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$placement = rand(0, count($matches[0])-1);
 				
 				$templateMgr = TemplateManager::getManager();
-				$journal = $journal = $templateMgr->get_template_vars('currentJournal');
+				$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
 				$versionCompare = $this->currentOjsVersion->compare("3.1.2");
 
-				$element = $this->getSetting($journal->getId(), 'customElement');
+				$element = $this->getSetting($contextID, 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
