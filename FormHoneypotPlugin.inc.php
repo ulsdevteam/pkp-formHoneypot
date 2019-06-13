@@ -246,14 +246,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
 				$contextID = (!is_null($request->getContext()) ? $request->getContext()->getId() : CONTEXT_SITE);
-				//$context = $request->getContext();
 
 				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
 				$templateMgr = TemplateManager::getManager($request);
 				$templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
 
 				$this->import('FormHoneypotSettingsForm');
-				//$form = new FormHoneypotSettingsForm($this, $context->getId());
 				$form = new FormHoneypotSettingsForm($this, $contextID);
 
 				// This assigns select options
