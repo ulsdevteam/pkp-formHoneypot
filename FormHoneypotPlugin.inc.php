@@ -27,7 +27,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	/**
 	 * @var $currentOjsVersion string
 	 * 
-	 * This string holds the output of getVersionString() from the VersionDAO
+	 * This string holds the current version object returned by the VersionDAO
 	 * object. It's built in $this->register() and is used throughout the plugin
 	 * to support backwards compatibility with older versions of OJS.
 	 */
