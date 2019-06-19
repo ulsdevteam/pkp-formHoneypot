@@ -25,7 +25,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		'formHoneypotMaximumTime' => 'int',
 	);
 	/**
-	 * @var $currentOjsVersion string
+	 * @var $currentOjsVersion object
 	 * 
 	 * This string holds the current version object returned by the VersionDAO
 	 * object. It's built in $this->register() and is used throughout the plugin
@@ -313,7 +313,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
-			return parent::getTemplatePath($inCore) . DIRECTORY_SEPARATOR;
+			return parent::getTemplatePath($inCore);
 		} else {
 			// OJS 3.1.1 and earlier 3.x releases
 			return parent::getTemplatePath($inCore) . 'templates' . DIRECTORY_SEPARATOR;
