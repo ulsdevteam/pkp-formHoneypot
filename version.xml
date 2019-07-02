@@ -14,6 +14,7 @@
 	<type>plugins.generic</type>
 	<release>1.3.0.0</release>
 	<date>2019-06-19</date>
+	<sitewide>1</sitewide>
 	<lazy-load>1</lazy-load>
 	<class>FormHoneypotPlugin</class>
 </version>

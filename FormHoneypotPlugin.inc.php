@@ -31,7 +31,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * object. It's built in $this->register() and is used throughout the plugin
 	 * to support backwards compatibility with older versions of OJS.
 	 */
-	public $currentOjsVersion = 0;
+	public $currentAppVersion = null;
 
 	/**
 	 * @var $formTimerSetting string
@@ -62,13 +62,13 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function register($category, $path, $mainContextId = null) {
 		// Setting version information for backwards compatibility in other areas of the plugin
 		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$this->currentOjsVersion = $versionDao->getCurrentVersion();
+		$this->currentAppVersion = $versionDao->getCurrentVersion();
 
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		
 		$request = Application::getRequest();
-		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
+		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
 
 		if ($success && $this->getEnabled($mainContextId)) {
 			
@@ -120,6 +120,24 @@ class FormHoneypotPlugin extends GenericPlugin {
 	}
 	
 	/**
+	 * Backwards-compatible method to retrieve the current context across
+	 * multiple versions of PKP applicatiosn
+	 * @return 
+	 */
+	function _getBackwardsCompatibleContext() {
+		$versionCompare = $this->currentAppVersion->compare("3.2");
+		if($versionCompare >= 0) {
+			// OJS 3.2 and later
+			$request = Application::get()->getRequest();
+			$context = $request->getContext();
+		} else {
+			// OJS 3.1.2 and earlier
+			$context = Request::getContext();
+		}
+		return $context;
+	}
+	
+	/**
 	 * Insert Form Honeypot page tag to footer, if page is the user registration
 	 * @param $hookName string Name of hook calling function
 	 * @param $params array of smarty and output objects
@@ -128,8 +146,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function insertTag($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
 
-		// journal is required to retrieve settings
-		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
+		// context is required to retrieve settings
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 		
 		// element is required to set the honeypot
 		if (isset($contextID)) {
@@ -137,7 +155,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 
 		// Testing version once for conditionals below
-		$versionCompare = $this->currentOjsVersion->compare("3.2");
+		$versionCompare = $this->currentAppVersion->compare("3.2");
 		// only operate on user registration
 		if($versionCompare >= 0) {
 			// OJS 3.2 and later
@@ -154,7 +172,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$templateMgr->assign('element', $element);
 
 			// Testing version once for conditionals below
-			$versionCompare = $this->currentOjsVersion->compare("3.1.2");
+			$versionCompare = $this->currentAppVersion->compare("3.1.2");
 			if($versionCompare >= 0) {
 				// OJS 3.1.2 and later
 				$output =& $args[2];
@@ -176,8 +194,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function validateHoneypot($hookName, $params) {
 		
-		$templateMgr = TemplateManager::getManager();
-		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
+		//$templateMgr = TemplateManager::getManager();
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 		if (isset($contextID)) {
 			$element = $this->getSetting($contextID, 'customElement');
@@ -245,7 +263,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function manage($args, $request) {
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
-				$contextID = (!is_null($request->getContext()) ? $request->getContext()->getId() : CONTEXT_SITE);
+				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
 				$templateMgr = TemplateManager::getManager($request);
@@ -309,7 +327,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		$versionCompare = $this->currentOjsVersion->compare("3.1.2");
+		$versionCompare = $this->currentAppVersion->compare("3.1.2");
 
 		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
@@ -326,16 +344,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleTemplateDisplay($hookName, $args) {
 		
-		// Could get this from $args[0] in this case but the result is identical
-		// and this is less likely to change
-		$templateMgr = TemplateManager::getManager();
+		$templateMgr = $args[0];
 		
 		$template = $args[1];
-		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$versionCompare = $this->currentOjsVersion->compare("3.1.2");
+					$versionCompare = $this->currentAppVersion->compare("3.1.2");
 
 					$customElement = $this->getSetting($contextID, 'customElement');
 					if (!empty($customElement)) {
@@ -359,8 +375,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
 
-		$templateMgr = TemplateManager::getManager();
-		$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 		if (isset($contextID)) {
 			$element = $this->getSetting($contextID, 'customElement');
@@ -386,8 +401,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$placement = rand(0, count($matches[0])-1);
 				
 				$templateMgr = TemplateManager::getManager();
-				$contextID = (!is_null($templateMgr->get_template_vars('currentJournal')) ? $templateMgr->get_template_vars('currentJournal')->getId() : CONTEXT_SITE);
-				$versionCompare = $this->currentOjsVersion->compare("3.1.2");
+				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
+				$versionCompare = $this->currentAppVersion->compare("3.1.2");
 
 				$element = $this->getSetting($contextID, 'customElement');
 				$templateMgr->assign('element', $element);
