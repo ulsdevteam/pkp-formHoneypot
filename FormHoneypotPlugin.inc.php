@@ -25,7 +25,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		'formHoneypotMaximumTime' => 'int',
 	);
 	/**
-	 * @var $currentOjsVersion object
+	 * @var $currentAppVersion Version
 	 * 
 	 * This string holds the current version object returned by the VersionDAO
 	 * object. It's built in $this->register() and is used throughout the plugin
