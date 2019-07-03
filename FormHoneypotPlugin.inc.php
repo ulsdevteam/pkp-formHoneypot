@@ -24,6 +24,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 		'formHoneypotMinimumTime' => 'int',
 		'formHoneypotMaximumTime' => 'int',
 	);
+	/**
+	 * @var $currentAppVersion Version
+	 * 
+	 * This string holds the current version object returned by the VersionDAO
+	 * object. It's built in $this->register() and is used throughout the plugin
+	 * to support backwards compatibility with older versions of OJS.
+	 */
+	public $currentAppVersion = null;
 
 	/**
 	 * @var $formTimerSetting string
@@ -39,20 +47,30 @@ class FormHoneypotPlugin extends GenericPlugin {
 	);
 
 	/**
+	 * @copydoc Plugin::isSitePlugin()
+	 */
+	function isSitePlugin() {
+		return true;
+	}
+
+	/**
 	 * Called as a plugin is registered to the registry
 	 * @param $category String Name of category plugin was registered to
 	 * @return boolean True iff plugin initialized successfully; if false,
 	 * 	the plugin will not be registered.
 	 */
 	function register($category, $path, $mainContextId = null) {
+		// Setting version information for backwards compatibility in other areas of the plugin
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$this->currentAppVersion = $versionDao->getCurrentVersion();
+
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+		
 		$request = Application::getRequest();
-		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
+		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
 
 		if ($success && $this->getEnabled($mainContextId)) {
-			$request = Application::getRequest();
-            $contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_ID_NONE;
 			
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
@@ -68,11 +86,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				// generate new form field
 				$this->updateSetting($contextId, 'customElement', $this->generateElementName());
 			}
-		} else {
-			if(element) {
-				// clear form field
-				$this->updateSetting($contextId, 'customElement', "");
-			}
+
 		}
 		return $success;
 	}
@@ -104,7 +118,25 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 		return parent::getManagementVerbs($verbs);
 	}
-
+	
+	/**
+	 * Backwards-compatible method to retrieve the current context across
+	 * multiple versions of PKP applicatiosn
+	 * @return 
+	 */
+	function _getBackwardsCompatibleContext() {
+		$versionCompare = $this->currentAppVersion->compare("3.2");
+		if($versionCompare >= 0) {
+			// OJS 3.2 and later
+			$request = Application::get()->getRequest();
+			$context = $request->getContext();
+		} else {
+			// OJS 3.1.2 and earlier
+			$context = Request::getContext();
+		}
+		return $context;
+	}
+	
 	/**
 	 * Insert Form Honeypot page tag to footer, if page is the user registration
 	 * @param $hookName string Name of hook calling function
@@ -113,20 +145,43 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function insertTag($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
+
+		// context is required to retrieve settings
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 		
-		// journal is required to retrieve settings
-		$journal = $templateMgr->get_template_vars('currentJournal');
 		// element is required to set the honeypot
-		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'customElement');
+		if (isset($contextID)) {
+			$element = $this->getSetting($contextID, 'customElement');
 		}
+
+		// Testing version once for conditionals below
+		$versionCompare = $this->currentAppVersion->compare("3.2");
 		// only operate on user registration
-		$page = Request::getRequestedPage();
-		$op = Request::getRequestedOp();
+		if($versionCompare >= 0) {
+			// OJS 3.2 and later
+			$request = Application::get()->getRequest();
+			$page = $request->getRequestedPage();
+			$op = $request->getRequestedOp();
+		} else {
+			// OJS 3.1.2 and earlier
+			$page = Request::getRequestedPage();
+			$op = Request::getRequestedOp();
+		}
+		
 		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
-			// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
-			$templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl', null, null, true);
+
+			// Testing version once for conditionals below
+			$versionCompare = $this->currentAppVersion->compare("3.1.2");
+			if($versionCompare >= 0) {
+				// OJS 3.1.2 and later
+				$output =& $args[2];
+				$output .= $templateMgr->fetch($this->getTemplateResource('pageTagScript.tpl'));
+			} else {
+				// OJS 3.1.1 and earlier 3.x releases
+				// true passed as the fourth argument causes the template manager to display the resource passed as argument 1.
+				$templateMgr->fetch($this->getTemplatePath() . 'pageTagScript.tpl', null, null, true);
+			}
 		}
 		return false;
 	}
@@ -138,11 +193,14 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function validateHoneypot($hookName, $params) {
-		$journal = Request::getJournal();
-		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'customElement');
-			$minTime = $this->getSetting($journal->getId(), 'formHoneypotMinimumTime');
-			$maxTime = $this->getSetting($journal->getId(), 'formHoneypotMaximumTime');
+		
+		//$templateMgr = TemplateManager::getManager();
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
+
+		if (isset($contextID)) {
+			$element = $this->getSetting($contextID, 'customElement');
+			$minTime = $this->getSetting($contextID, 'formHoneypotMinimumTime');
+			$maxTime = $this->getSetting($contextID, 'formHoneypotMaximumTime');
 		}
 		$form = $params[0];
 		// If we have an element selected as a honeypot, check it 
@@ -168,7 +226,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$session = $sessionManager->getUserSession();
 			$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
 			$current = time();
-			if (!$started || ($minTime > 0 && current - $started < $minTime) || ($maxTime > 0 && current - $started > $maxTime)) {
+			if (!$started || ($minTime > 0 && $current - $started < $minTime) || ($maxTime > 0 && $current - $started > $maxTime)) {
 				$form->addError(
 					'username',
 					__('plugins.generic.formHoneypot.invalidSessionTime')
@@ -205,17 +263,17 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function manage($args, $request) {
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
-				$context = $request->getContext();
+				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
 				$templateMgr = TemplateManager::getManager($request);
 				$templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
 
 				$this->import('FormHoneypotSettingsForm');
-				$form = new FormHoneypotSettingsForm($this, $context->getId());
+				$form = new FormHoneypotSettingsForm($this, $contextID);
 
 				// This assigns select options
-				if (Request::getUserVar('save')) {
+				if ($request->getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
 						$form->execute();
@@ -269,7 +327,15 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		return parent::getTemplatePath($inCore) . 'templates/';
+		$versionCompare = $this->currentAppVersion->compare("3.1.2");
+
+		if($versionCompare >= 0) {
+			// OJS 3.1.2 and later
+			return parent::getTemplatePath($inCore);
+		} else {
+			// OJS 3.1.1 and earlier 3.x releases
+			return parent::getTemplatePath($inCore) . 'templates' . DIRECTORY_SEPARATOR;
+		}
 	}
 
 	/**
@@ -279,14 +345,23 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function handleTemplateDisplay($hookName, $args) {
 		
 		$templateMgr = $args[0];
+		
 		$template = $args[1];
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$journal =& Request::getJournal();
-					$customElement = $this->getSetting($journal->getId(), 'customElement');
+					$versionCompare = $this->currentAppVersion->compare("3.1.2");
+
+					$customElement = $this->getSetting($contextID, 'customElement');
 					if (!empty($customElement)) {
-						$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
+						if($versionCompare >= 0) {
+							// OJS 3.1.2 and later (Smarty 3)
+							$templateMgr->registerFilter("output", array($this, 'addCustomElement'));
+						} else {
+							// OJS 3.1.1 and earlier (Smarty 2)
+							$templateMgr->register_outputfilter(array($this, 'addCustomElement'));
+						}
 					}
 				break;
 		}
@@ -299,9 +374,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
-		$journal = Request::getJournal();
-		if (isset($journal)) {
-			$element = $this->getSetting($journal->getId(), 'customElement');
+
+		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
+
+		if (isset($contextID)) {
+			$element = $this->getSetting($contextID, 'customElement');
 			$args[1][] = $element;
 		}
 		return false;
@@ -322,17 +399,28 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$matches = array();
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
-				$journal = Request::getJournal();
-				$element = $this->getSetting($journal->getId(), 'customElement');
+				
+				$templateMgr = TemplateManager::getManager();
+				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
+				$versionCompare = $this->currentAppVersion->compare("3.1.2");
+
+				$element = $this->getSetting($contextID, 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
-				$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');
+				
+				if($versionCompare >= 0) {
+					// OJS 3.1.2 and later
+					$newOutput .= $templateMgr->fetch($this->getTemplateResource('pageTagForm.tpl'));
+				} else {
+					// OJS 3.1.1 and earlier
+					$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'pageTagForm.tpl');
+				}
+
 				$newOutput .= substr($output, $offset);
 				$output = $newOutput;
 			}
 		}
-		$templateMgr->unregister_outputfilter('addCustomElement');
 		return $output;
 	}
 

@@ -32,8 +32,14 @@ class FormHoneypotSettingsForm extends Form {
 	function __construct($plugin, $contextId) {
 		$this->_contextId = $contextId;
 		$this->_plugin = $plugin;
-
-		parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
+		
+		if (method_exists($plugin, 'getTemplateResource')) {
+			// OJS 3.1.2 and later
+			parent::__construct($plugin->getTemplateResource('settingsForm.tpl'));
+		} else {
+			// OJS 3.1.1 and earlier
+			parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
+		}
 
 		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMinimumTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
 		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMaximimTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
