@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * plugins/generic/formHoneypot/locale/en_US/locale.xml
+  *
+  * Copyright (c) University of Pittsburgh
+  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+  *
+  * Form Honeypot plugin localization strings
+  -->
+ 
+<locale name="nl_NL" full_name="Nederlands">
+
+	<!-- Form Honeypot -->
+	<message key="plugins.generic.formHoneypot.displayName">Formulier Honeypot Plugin</message>
+	<message key="plugins.generic.formHoneypot.description"><![CDATA[Deze plugin voegt een verborgen veld toe aan het registratieformulier, dat gebruikt wordt als "lokveld". Dit veld wordt niet getoond op de website en mag niet worden ingevuld. Wanneer een bot het veld invult, wordt een foutmelding getoond. U kunt ook een minimum en maximum tijd instellen voor het invullen van het registratieformulier. Bijvoorbeeld, wanneer een bot het formulier in minder dan 2 seconden invult, of hetzelfde formulier 30 minuten (1800 seconden) later wil gebruiken, kan de registratie worden geblokkeerd.]]></message>
+	<message key="plugins.generic.formHoneypot.leaveBlank">Laat leeg</message>
+	<message key="plugins.generic.formHoneypot.doNotUseThisField">Dit veld moet leeg blijven: {$element}</message>
+	<message key="plugins.generic.formHoneypot.invalidSessionTime">Uw registratiepoging is geblokkeerd.</message>
+	<!-- Form Honeypot Settings Management -->
+	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Formulier Honeypot instellingen</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.description"><![CDATA[Kies een minimum en maximum tijd, in seconden. Registratiepogingen die sneller dan de minimumtijd worden voltooid, of trager dan de maximumtijd, worden geblokkeerd. U kunt deze instellingen uitschakelen door 0 in te vullen als waarde.]]></message>
+	<message key="plugins.generic.formHoneypot.manager.settings.element">Formulier-element</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.createNewElement">Creëer een nieuw element</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTime">Minimumtijd (in seconden)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTimeNumber">Minimumtijd moet een postitief getal zijn.</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTime">Maximumtijd (in seconden)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTimeNumber">Maximumtijd moet een postitief getal zijn.</message>
+</locale>
