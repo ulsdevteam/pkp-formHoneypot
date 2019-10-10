@@ -60,13 +60,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * 	the plugin will not be registered.
 	 */
 	function register($category, $path, $mainContextId = null) {
+		$success = parent::register($category, $path, $mainContextId);
+		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+
 		// Setting version information for backwards compatibility in other areas of the plugin
 		$versionDao = DAORegistry::getDAO('VersionDAO');
 		$this->currentAppVersion = $versionDao->getCurrentVersion();
-
-		$success = parent::register($category, $path, $mainContextId);
-		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
-		
 		$request = Application::getRequest();
 		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
 
@@ -327,7 +326,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		$versionCompare = $this->currentAppVersion->compare("3.1.2");
+		// This method is called by Plugin registration even during installation and upgrades, when currrentAppVersion might not exist
+		$versionCompare = $this->currentAppVersion ? $this->currentAppVersion->compare("3.1.2") : -1;
 
 		if($versionCompare >= 0) {
 			// OJS 3.1.2 and later
