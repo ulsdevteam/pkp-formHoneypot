@@ -60,16 +60,17 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * 	the plugin will not be registered.
 	 */
 	function register($category, $path, $mainContextId = null) {
-		$success = parent::register($category, $path, $mainContextId);
+                $success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
+
+		$request = Application::getRequest();
+		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
 
 		// Setting version information for backwards compatibility in other areas of the plugin
 		$versionDao = DAORegistry::getDAO('VersionDAO');
 		$this->currentAppVersion = $versionDao->getCurrentVersion();
-		$request = Application::getRequest();
-		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
 
-		if ($success && $this->getEnabled($mainContextId)) {
+                if ($success && $this->getEnabled($mainContextId)) {
 			
 			// Attach to the page footer
 			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
@@ -120,11 +121,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	
 	/**
 	 * Backwards-compatible method to retrieve the current context across
-	 * multiple versions of PKP applicatiosn
+	 * multiple versions of PKP applications
 	 * @return 
 	 */
 	function _getBackwardsCompatibleContext() {
 		$versionCompare = $this->currentAppVersion->compare("3.2");
+                
 		if($versionCompare >= 0) {
 			// OJS 3.2 and later
 			$request = Application::get()->getRequest();
@@ -327,9 +329,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function getTemplatePath($inCore = false) {
 		// This method is called by Plugin registration even during installation and upgrades, when currrentAppVersion might not exist
-		$versionCompare = $this->currentAppVersion ? $this->currentAppVersion->compare("3.1.2") : -1;
-
-		if($versionCompare >= 0) {
+                if(strpos(parent::getTemplatePath($inCore), 'templates')) {
 			// OJS 3.1.2 and later
 			return parent::getTemplatePath($inCore);
 		} else {
