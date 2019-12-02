@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * plugins/generic/formHoneypot/locale/en_US/locale.xml
+  *
+  * Copyright (c) University of Pittsburgh
+  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+  *
+  * Form Honeypot plugin localization strings
+  -->
+ 
+<locale name="it_IT" full_name="Italiano">
+
+	<!-- Form Honeypot -->
+	<message key="plugins.generic.formHoneypot.displayName">Plugin Modulo Honeypot</message>
+	<message key="plugins.generic.formHoneypot.description"><![CDATA[Questo plugin aggiunge un campo nel modulo di registrazione dei nuovi utenti e lo usa come honeypot. Questo campo viene nascosto agli utenti e viene presentato un errore se un bot lo compila. Puoi anche selezionare un tempo minimo e massimo per la compilazione del modulo. Ad esempio, se un bot compila il modulo in meno di 2 secondi o prova a usare il modulo 30 minuti (1800 secondi) dopo, la registrazione può essere bloccata.]]></message>
+	<message key="plugins.generic.formHoneypot.leaveBlank">Lasciare vuoto</message>
+	<message key="plugins.generic.formHoneypot.doNotUseThisField">Questo campo deve essere lasciato vuoto: {$element}</message>
+	<message key="plugins.generic.formHoneypot.invalidSessionTime">La tua registrazione è stata bloccata.</message>
+	<!-- Form Honeypot Settings Management -->
+	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Impostazioni Modulo Honeypot</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.description"><![CDATA[Scegli un tempo minimo e uno massimo, in secondi. Tentativi di reistrazione che vengono completati in meno del tempo minimo o più del tempo massimo vengono rigettati. Puoi disabilitare questa funzione indicando 0 per entrambi i limiti.]]></message>
+	<message key="plugins.generic.formHoneypot.manager.settings.element">Elemento del modulo</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.createNewElement">Crea un nuovo elemento</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTime">Tempo minimo (in secondi)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTimeNumber">Tempo minimo deve essere un valore numerico positivo.</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTime">Tempo massimo (in secondi)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTimeNumber">Tempo massimo deve essere un valore numerico positivo.</message>
+</locale>
