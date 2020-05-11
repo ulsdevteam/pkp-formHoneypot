@@ -24,14 +24,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 		'formHoneypotMinimumTime' => 'int',
 		'formHoneypotMaximumTime' => 'int',
 	);
-	/**
-	 * @var $currentAppVersion Version
-	 * 
-	 * This string holds the current version object returned by the VersionDAO
-	 * object. It's built in $this->register() and is used throughout the plugin
-	 * to support backwards compatibility with older versions of OJS.
-	 */
-	public $currentAppVersion = null;
 
 	/**
 	 * @var $formTimerSetting string
@@ -63,9 +55,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 
-		// Setting version information for backwards compatibility in other areas of the plugin
-		$versionDao = DAORegistry::getDAO('VersionDAO');
-		$this->currentAppVersion = $versionDao->getCurrentVersion();
 		$request = Application::getRequest();
 		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
 
@@ -124,8 +113,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return 
 	 */
 	function _getBackwardsCompatibleContext() {
-		$versionCompare = $this->currentAppVersion->compare("3.2");
-		if($versionCompare >= 0) {
+		if(method_exists('Application', 'get')) {
 			// OJS 3.2 and later
 			$request = Application::get()->getRequest();
 			$context = $request->getContext();
@@ -153,10 +141,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$element = $this->getSetting($contextID, 'customElement');
 		}
 
-		// Testing version once for conditionals below
-		$versionCompare = $this->currentAppVersion->compare("3.2");
 		// only operate on user registration
-		if($versionCompare >= 0) {
+		if (method_exists('Application', 'get')) {
 			// OJS 3.2 and later
 			$request = Application::get()->getRequest();
 			$page = $request->getRequestedPage();
@@ -171,8 +157,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 			$templateMgr->assign('element', $element);
 
 			// Testing version once for conditionals below
-			$versionCompare = $this->currentAppVersion->compare("3.1.2");
-			if($versionCompare >= 0) {
+			if (method_exists($this, 'getTemplateResource')) {
 				// OJS 3.1.2 and later
 				$output =& $args[2];
 				$output .= $templateMgr->fetch($this->getTemplateResource('pageTagScript.tpl'));
@@ -326,10 +311,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @copydoc PKPPlugin::getTemplatePath
 	 */
 	function getTemplatePath($inCore = false) {
-		// This method is called by Plugin registration even during installation and upgrades, when currrentAppVersion might not exist
-		$versionCompare = $this->currentAppVersion ? $this->currentAppVersion->compare("3.1.2") : -1;
-
-		if($versionCompare >= 0) {
+		if(method_exists($this, 'getTemplateResource')) {
 			// OJS 3.1.2 and later
 			return parent::getTemplatePath($inCore);
 		} else {
@@ -351,11 +333,9 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$versionCompare = $this->currentAppVersion->compare("3.1.2");
-
 					$customElement = $this->getSetting($contextID, 'customElement');
 					if (!empty($customElement)) {
-						if($versionCompare >= 0) {
+						if (method_exists($templateMgr, 'registerFilter')) {
 							// OJS 3.1.2 and later (Smarty 3)
 							$templateMgr->registerFilter("output", array($this, 'addCustomElement'));
 						} else {
@@ -402,14 +382,13 @@ class FormHoneypotPlugin extends GenericPlugin {
 				
 				$templateMgr = TemplateManager::getManager();
 				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
-				$versionCompare = $this->currentAppVersion->compare("3.1.2");
 
 				$element = $this->getSetting($contextID, 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
 				
-				if($versionCompare >= 0) {
+				if (method_exists($this, 'getTemplateResource')) {
 					// OJS 3.1.2 and later
 					$newOutput .= $templateMgr->fetch($this->getTemplateResource('pageTagForm.tpl'));
 				} else {
