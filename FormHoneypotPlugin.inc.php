@@ -55,9 +55,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 
-		$request = Application::getRequest();
-		$contextId = $request->getContext() ? $request->getContext()->getId() : CONTEXT_SITE;
-
 		if ($success && $this->getEnabled($mainContextId)) {
 			
 			// Attach to the page footer
@@ -69,10 +66,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 			// Add custom field if desired
 			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
 			HookRegistry::register('registrationform::readuservars', array($this, 'handleUserVar'));
-			$element = $this->getSetting($contextId, 'customElement');
+			$element = $this->getSetting(CONTEXT_SITE, 'customElement');
 			if(!$element) {
 				// generate new form field
-				$this->updateSetting($contextId, 'customElement', $this->generateElementName());
+				$this->updateSetting(CONTEXT_SITE, 'customElement', $this->generateElementName());
 			}
 
 		}
@@ -108,23 +105,6 @@ class FormHoneypotPlugin extends GenericPlugin {
 	}
 	
 	/**
-	 * Backwards-compatible method to retrieve the current context across
-	 * multiple versions of PKP applicatiosn
-	 * @return 
-	 */
-	function _getBackwardsCompatibleContext() {
-		if(method_exists('Application', 'get')) {
-			// OJS 3.2 and later
-			$request = Application::get()->getRequest();
-			$context = $request->getContext();
-		} else {
-			// OJS 3.1.2 and earlier
-			$context = Request::getContext();
-		}
-		return $context;
-	}
-	
-	/**
 	 * Insert Form Honeypot page tag to footer, if page is the user registration
 	 * @param $hookName string Name of hook calling function
 	 * @param $params array of smarty and output objects
@@ -133,13 +113,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function insertTag($hookName, $args) {
 		$templateMgr = TemplateManager::getManager();
 
-		// context is required to retrieve settings
-		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
-		
-		// element is required to set the honeypot
-		if (isset($contextID)) {
-			$element = $this->getSetting($contextID, 'customElement');
-		}
+		$element = $this->getSetting(CONTEXT_SITE, 'customElement');
 
 		// only operate on user registration
 		if (method_exists('Application', 'get')) {
@@ -178,14 +152,9 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function validateHoneypot($hookName, $params) {
 		
-		//$templateMgr = TemplateManager::getManager();
-		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
-
-		if (isset($contextID)) {
-			$element = $this->getSetting($contextID, 'customElement');
-			$minTime = $this->getSetting($contextID, 'formHoneypotMinimumTime');
-			$maxTime = $this->getSetting($contextID, 'formHoneypotMaximumTime');
-		}
+		$element = $this->getSetting(CONTEXT_SITE, 'customElement');
+		$minTime = $this->getSetting(CONTEXT_SITE, 'formHoneypotMinimumTime');
+		$maxTime = $this->getSetting(CONTEXT_SITE, 'formHoneypotMaximumTime');
 		$form = $params[0];
 		// If we have an element selected as a honeypot, check it 
 		if (isset($element) && isset($form)) {
@@ -247,14 +216,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function manage($args, $request) {
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
-				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
-
 				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
 				$templateMgr = TemplateManager::getManager($request);
 				$templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
 
 				$this->import('FormHoneypotSettingsForm');
-				$form = new FormHoneypotSettingsForm($this, $contextID);
+				$form = new FormHoneypotSettingsForm($this, CONTEXT_SITE);
 
 				// This assigns select options
 				if ($request->getUserVar('save')) {
@@ -329,11 +296,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 		$templateMgr = $args[0];
 		
 		$template = $args[1];
-		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$customElement = $this->getSetting($contextID, 'customElement');
+					$customElement = $this->getSetting(CONTEXT_SITE, 'customElement');
 					if (!empty($customElement)) {
 						if (method_exists($templateMgr, 'registerFilter')) {
 							// OJS 3.1.2 and later (Smarty 3)
@@ -355,12 +321,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
 
-		$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
-
-		if (isset($contextID)) {
-			$element = $this->getSetting($contextID, 'customElement');
-			$args[1][] = $element;
-		}
+		$element = $this->getSetting(CONTEXT_SITE, 'customElement');
+		$args[1][] = $element;
 		return false;
 	}
 
@@ -381,9 +343,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$placement = rand(0, count($matches[0])-1);
 				
 				$templateMgr = TemplateManager::getManager();
-				$contextID = (!is_null($this->_getBackwardsCompatibleContext()) ? $this->_getBackwardsCompatibleContext()->getId() : CONTEXT_SITE);
 
-				$element = $this->getSetting($contextID, 'customElement');
+				$element = $this->getSetting(CONTEXT_SITE, 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);
