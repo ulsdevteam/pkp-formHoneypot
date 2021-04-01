@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * locale/sv_SE/locale.xml
+  *
+  * Copyright (c) 2014-2019 Simon Fraser University
+  * Copyright (c) 2003-2019 John Willinsky
+  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
+  *
+  * Localization strings.
+  -->
+
+<locale name="sv_SE" full_name="Svenska">
+	<message key="plugins.generic.formHoneypot.displayName">Form Honeypot Plugin</message>
+	<message key="plugins.generic.formHoneypot.description"><![CDATA[Denna insticksmodul lägger till ett fält i användarregistreringsformuläret och använder det som en honungsfälla. Fältet är dolt för användare och ett fel visas om det fylls i av en bot. Du kan också välja en minimum- och maximumtid för ifyllning av formuläret. Om till exempel en bot fyller i formuläret på två sekunder och försöker använda samma formulär 30 minuter (1800 sekunder) senare, kan registreringen blockeras.]]></message>
+	<message key="plugins.generic.formHoneypot.leaveBlank">Lämna detta fält tomt</message>
+	<message key="plugins.generic.formHoneypot.doNotUseThisField">Det här fältet måste vara tomt: {$element}</message>
+	<message key="plugins.generic.formHoneypot.invalidSessionTime">Din registrering har blivit blockerad.</message>
+	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Form Honeypot inställningar</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.description"><![CDATA[Välj en minimumtid och en maximumtid, i sekunder. Registreringsförsök som görs snabbare än minimumtiden eller långsammare än maximumtiden blir avvisade. Du kan avvaktivera denna funktion genom att sätta bägge gränserna till 0.]]></message>
+	<message key="plugins.generic.formHoneypot.manager.settings.element">Formulärfält</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.createNewElement">Skapa ett nytt fält</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTime">Minimumtid (i sekunder)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTimeNumber">Minimumtid måste vara ett positivt tal</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTime">Maximumtid (i sekunder)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTimeNumber">Maximumtid måste vara ett positivt tal.</message>
+</locale>
