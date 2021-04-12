@@ -1,0 +1,60 @@
+# plugins/generic/formHoneypot/locale/es_ES/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+# 
+# Translation credits: https://pkp.sfu.ca/wiki/index.php?title=OMP:_Spanish_(es_ES)
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Módulo de formulario Honeypot"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "Este módulo convierte uno de los campos del formulario de registro de usuario en un honeypot. "
+"El campo escogido se esconderá a los usuarios normales, de manera que, cuando un robot lo complete, se mostrará un "
+"error. Puede configurar el tiempo mínimo y máximo para completar el formulario. Por ejemplo, si un robot completa el "
+"forumlario en 2 segundos o intenta utilizar el mismo formulario 30 minutos (1800 segundos) más tarde, el registro "
+"puede bloquearse."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Dejar en blanco"
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "Este campo debe dejarse en blanco: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "Petición de registro bloqueada."
+	
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Configuración del formulario Honeypot"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr "Escoge el campo del formulario de registro de usuario que quieres convertir en un Honeypot para robots. Este "
+"campo se esconderá a los usuarios normales (mediante javascript), pero los bots lo seguirán viendo e intentarán "
+"completarlo. Si se completase, generaría un error de registro. El campo seguirá estando disponible en el perfil para "
+"los usuarios una vez registrados."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Elemento de formulario"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Crear un nuevo elemento"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Tiempo mínimo (en segundos)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "El tiempo mínimo, debe ser un número positivo."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Tiempo máximo (en segundos)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "El tiempo máximo debe ser un número positivo."
