@@ -1,0 +1,58 @@
+# plugins/generic/formHoneypot/locale/pt_BR/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Plugin Formulário Pote de Mel (Honeypot)"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "Este plugin irá converter um dos campos no formulário de cadastro do usuário em um pote de mel (honeypot). "
+"Este campo estará escondido dos usuários e um erro será apresentado se um bot preencher o campo. Você também pode "
+"selecionar um tempo mínimo e máximo para permitir a conclusão do formulário. Por exemplo, se um bot concluir o "
+"formulário em menos de 2 segundos ou tentar usar o mesmo formulário 30 minutos (1800 segundos) depois, o cadastro "
+"poderá ser bloqueado."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Deixar isso em branco"
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "Este campo deve estar em branco: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "Seu cadastro foi bloqueado."
+
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Configurações do Formulário Honeypot"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr "Selecione o campo no formulário de cadastro que você gostaria de converter em um pote de mel (honeypot) de bot. "
+"Este campo estará escondido de usuários normais via javascript, mas os bots provavelmente ainda o verão e tentarão "
+"usar o campo. Usar este campo resultará em um erro de registro. O campo ainda estará disponível para os usuários do "
+"formulário de perfil do usuário após o cadastro."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Elemento do formulário"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Criar novo elemento"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Tempo mínimo (em segundos)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "Tempo mínimo deve ser um valor numérico positivo."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Tempo máximo (em segundos)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "Tempo máximo deve ser um valor numérico positivo."

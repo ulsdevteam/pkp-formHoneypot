@@ -1,0 +1,56 @@
+# plugins/generic/formHoneypot/locale/en_US/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Plugin Modulo Honeypot"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "Questo plugin aggiunge un campo nel modulo di registrazione dei nuovi utenti e lo usa come honeypot. Questo "
+"campo viene nascosto agli utenti e viene presentato un errore se un bot lo compila. Puoi anche selezionare un tempo "
+"minimo e massimo per la compilazione del modulo. Ad esempio, se un bot compila il modulo in meno di 2 secondi o prova "
+"a usare il modulo 30 minuti (1800 secondi) dopo, la registrazione può essere bloccata."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Lasciare vuoto"
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "Questo campo deve essere lasciato vuoto: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "La tua registrazione è stata bloccata."
+
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Impostazioni Modulo Honeypot"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr ""
+"Scegli un tempo minimo e uno massimo, in secondi. Tentativi di reistrazione che vengono completati in meno del tempo "
+"minimo o più del tempo massimo vengono rigettati. Puoi disabilitare questa funzione indicando 0 per entrambi i limiti."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Elemento del modulo"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Crea un nuovo elemento"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Tempo minimo (in secondi)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "Tempo minimo deve essere un valore numerico positivo."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Tempo massimo (in secondi)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "Tempo massimo deve essere un valore numerico positivo."

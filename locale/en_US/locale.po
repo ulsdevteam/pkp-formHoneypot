@@ -1,0 +1,55 @@
+# plugins/generic/formHoneypot/locale/en_US/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Form Honeypot Plugin"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "This plugin will add a field on the user registration form and use it as a honeypot. This field will be hidden "
+"from users and an error will be presented if a bot fills out the field.  You may also select a minimum and maximum "
+"time to allow for form completion.  For example, if a bot completes the form in under 2 seconds or tries to use the "
+"same form 30 minutes (1800 seconds) later, the registration can be blocked."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Leave this blank"
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "This field must be left blank: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "Your registration has been blocked."
+
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Form Honeypot Settings"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr "Choose a minimum time and a maximum time, in seconds. Registration attempts that are completed faster than the "
+"minimum time or slower than the maximum time are rejected. You may disable this feature by setting both limits to 0."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Form Element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Create a new element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Minimum time (in seconds)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "Minimum time must be a positive numeric value."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Maximum time (in seconds)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "Maximum time must be a positive numeric value."

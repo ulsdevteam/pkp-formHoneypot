@@ -1,0 +1,57 @@
+# plugins/generic/formHoneypot/locale/en_US/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Formulier Honeypot Plugin"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "Deze plugin voegt een verborgen veld toe aan het registratieformulier, dat gebruikt wordt als \"lokveld\". "
+"Dit veld wordt niet getoond op de website en mag niet worden ingevuld. Wanneer een bot het veld invult, wordt een "
+"foutmelding getoond. U kunt ook een minimum en maximum tijd instellen voor het invullen van het registratieformulier. "
+"Bijvoorbeeld, wanneer een bot het formulier in minder dan 2 seconden invult, of hetzelfde formulier 30 minuten "
+"(1800 seconden) later wil gebruiken, kan de registratie worden geblokkeerd."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Laat leeg"
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "Dit veld moet leeg blijven: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "Uw registratiepoging is geblokkeerd."
+
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Formulier Honeypot instellingen"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr "Kies een minimum en maximum tijd, in seconden. Registratiepogingen die sneller dan de minimumtijd worden "
+"voltooid, of trager dan de maximumtijd, worden geblokkeerd. U kunt deze instellingen uitschakelen door 0 in te "
+"vullen als waarde."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Formulier-element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Creëer een nieuw element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Minimumtijd (in seconden)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "Minimumtijd moet een postitief getal zijn."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Maximumtijd (in seconden)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "Maximumtijd moet een postitief getal zijn."
