@@ -1,0 +1,57 @@
+# plugins/generic/formHoneypot/locale/de_DE/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Honeypot-Formular-Plugin"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "Das Plugin ergänzt ein Feld zu dem Registrierungsformular und nutzt es als \"Honeypot\"."
+"Das Feld ist für Nutzende nicht sichtbar und gibt einen Fehler aus, wenn ein Bot das Feld ausfüllt."
+"Es kann auch eine Minimal- und Maximalzeit festgelegt werden, um das Registrierungsformular auszufüllen."
+"Zum Beispiel, wenn ein Bot das Formular in unter 2 Sekunden oder das Formular nach 30 Minuten (1800) später wieder ausfüllt, "
+"wird die Registrierung blockiert."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Lassen Sie dieses Feld leer."
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "Dieses Feld muss leer bleiben: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "Ihre Registrierung wurde gesperrt."
+
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Honeypot-Formular-Einstellungen"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr "Wählen Sie eine Mindestzeit und eine Maximalzeit in Sekunden aus. Registrierungsversuche, die "
+"schneller als die Mindestzeit oder langsamer als die Höchstzeit abgeschlossen sind, werden abgelehnt. "
+"Sie können diese Funktion deaktivieren, indem Sie beide Werte auf 0 setzen."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Formularelement"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Erstelle ein neues Element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Mindestzeit (in Sekunden)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "Die Mindestzeit muss ein positiver Wert sein."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Maximalzeit (in Sekunden)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "Die Maximalzeit muss ein positiver Wert sein."
