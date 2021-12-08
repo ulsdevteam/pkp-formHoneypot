@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * plugins/generic/formHoneypot/locale/de_DE/locale.xml
+  *
+  * Copyright (c) University of Pittsburgh
+  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+  *
+  * Form Honeypot plugin localization strings
+  -->
+ 
+<locale name="de_DE" full_name="Deutsch">
+
+	<!-- Form Honeypot -->
+	<message key="plugins.generic.formHoneypot.displayName">Honeypot-Formular-Plugin</message>
+	<message key="plugins.generic.formHoneypot.description"><![CDATA[Das Plugin ergänzt ein Feld zu dem Registrierungsformular und nutzt es als \"Honeypot\". Das Feld ist für Nutzende nicht sichtbar und gibt einen Fehler aus, wenn ein Bot das Feld ausfüllt. Es kann auch eine Minimal- und Maximalzeit festgelegt werden, um das Registrierungsformular auszufüllen. Zum Beispiel, wenn ein Bot das Formular in unter 2 Sekunden oder das Formular nach 30 Minuten (1800) später wieder ausfüllt, wird die Registrierung blockiert.]]></message>
+	<message key="plugins.generic.formHoneypot.leaveBlank">Lassen Sie dieses Feld leer</message>
+	<message key="plugins.generic.formHoneypot.doNotUseThisField">Dieses Feld muss leer bleiben: {$element}</message>
+	<message key="plugins.generic.formHoneypot.invalidSessionTime">Ihre Registrierung wurde gesperrt.</message>
+	<!-- Form Honeypot Settings Management -->
+	<message key="plugins.generic.formHoneypot.manager.formHoneypotSettings">Honeypot-Formular-Einstellungen</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.description"><![CDATA[Wählen Sie eine Mindestzeit und eine Maximalzeit in Sekunden aus. Registrierungsversuche, die schneller als die Mindestzeit oder langsamer als die Höchstzeit abgeschlossen sind, werden abgelehnt. Sie können diese Funktion deaktivieren, indem Sie beide Werte auf 0 setzen.]]></message>
+	<message key="plugins.generic.formHoneypot.manager.settings.element">Formularelement</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.createNewElement">Erstelle ein neues Element</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTime">Mindestzeit (in Sekunden)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.minimumTimeNumber">Die Mindestzeit muss ein positiver Wert sein.</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTime">Maximalzeit (in Sekunden)</message>
+	<message key="plugins.generic.formHoneypot.manager.settings.maximumTimeNumber">Die Maximalzeit muss ein positiver Wert sein.</message>
+</locale>
