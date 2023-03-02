@@ -201,8 +201,8 @@ class FormHoneypotPlugin extends GenericPlugin {
 		 * remember when this form was initialized for the user
 		 * we'll store it as a user setting on form execution
 		 */
-		$sessionManager =& SessionManager::getManager();
-		$session =& $sessionManager->getUserSession();
+		$sessionManager = SessionManager::getManager();
+		$session = $sessionManager->getUserSession();
 		$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
 		if (!$started) {
 			$session->setSessionVar($this->getName()."::".$this->formTimerSetting, time());

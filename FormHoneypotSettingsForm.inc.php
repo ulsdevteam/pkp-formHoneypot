@@ -41,8 +41,8 @@ class FormHoneypotSettingsForm extends Form {
 			parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
 		}
 
-		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMinimumTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
-		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMaximimTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', create_function('$s', 'return ($s === "0" || $s > 0);')));
+		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMinimumTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', function ($s) {return ($s === "0" || $s > 0);}));
+		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMaximimTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', function ($s) {return ($s === "0" || $s > 0);}));
 		$this->addCheck(new FormValidatorPost($this));
 		$this->addCheck(new FormValidatorCSRF($this));
 	}
@@ -62,10 +62,10 @@ class FormHoneypotSettingsForm extends Form {
 	 * Fetch the form.
 	 * @copydoc Form::fetch()
 	 */
-	function fetch($request) {
+	function fetch($request, $template = null, $display = false) {
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('pluginName', $this->_plugin->getName());
-		return parent::fetch($request);
+		return parent::fetch($request, $template = null, $display = false);
 	}
 
 	/**
@@ -78,7 +78,7 @@ class FormHoneypotSettingsForm extends Form {
 	/**
 	 * Save settings.
 	 */
-	function execute() {
+	function execute(...$functionArgs) {
 		$contextId = $this->_contextId;
 		foreach ($this->_plugin->settingNames as $k => $v) {
 			$this->_plugin->updateSetting($contextId, $k, $this->getData($k), $v);
