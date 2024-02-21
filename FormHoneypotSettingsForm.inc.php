@@ -13,7 +13,10 @@
  */
 
 
-import('lib.pkp.classes.form.Form');
+use PKP\form\Form;
+use PKP\form\validation\FormValidatorCSRF;
+use PKP\form\validation\FormValidatorCustom;
+use PKP\form\validation\FormValidatorPost;
 
 class FormHoneypotSettingsForm extends Form {
 
