@@ -12,7 +12,8 @@
  * @brief Form Honeypot plugin class
  */
 
-import('lib.pkp.classes.plugins.GenericPlugin');
+use PKP\core\JSONMessage;
+use PKP\plugins\Hook;
 
 class FormHoneypotPlugin extends GenericPlugin {
 
@@ -56,16 +57,16 @@ class FormHoneypotPlugin extends GenericPlugin {
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 
 		if ($success && $this->getEnabled($mainContextId)) {
-			
+
 			// Attach to the page footer
-			HookRegistry::register('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
+			Hook::add('Templates::Common::Footer::PageFooter', array($this, 'insertTag'));
 			// Attach to the registration form validation
-			HookRegistry::register('registrationform::validate', array($this, 'validateHoneypot'));
+			Hook::add('registrationform::validate', array($this, 'validateHoneypot'));
 			// Attach to the registration form display
-			HookRegistry::register('registrationform::display', array($this, 'initializeTimer'));
+			Hook::add('registrationform::display', array($this, 'initializeTimer'));
 			// Add custom field if desired
-			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
-			HookRegistry::register('registrationform::readuservars', array($this, 'handleUserVar'));
+			Hook::add('TemplateManager::display', array($this, 'handleTemplateDisplay'));
+			Hook::add('registrationform::readuservars', array($this, 'handleUserVar'));
 			$element = $this->getSetting(CONTEXT_SITE, 'customElement');
 			if(!$element) {
 				// generate new form field
