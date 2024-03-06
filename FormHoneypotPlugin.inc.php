@@ -184,8 +184,9 @@ class FormHoneypotPlugin extends GenericPlugin {
 					'username',
 					__('plugins.generic.formHoneypot.invalidSessionTime')
 				);
+				$session->setSessionVar($this->getName()."::".$this->formTimerSetting, time());
 			} else {
-				$started = $session->unsetSessionVar($this->getName()."::".$this->formTimerSetting);
+				$session->unsetSessionVar($this->getName()."::".$this->formTimerSetting);
 			}
 		}
 		return false;
