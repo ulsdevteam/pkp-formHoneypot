@@ -11,9 +11,22 @@
  *
  * @brief Form Honeypot plugin class
  */
+namespace APP\plugins\generic\FormHoneypot;
 
 use PKP\core\JSONMessage;
 use PKP\plugins\Hook;
+use PKP\plugins\GenericPlugin;
+use PKP\config\Config;
+use PKP\core\PKPApplication;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+//use PKP\facades\Locale;
+use PKP\session\SessionManager;
+use APP\core\Application;
+use APP\core\Request;
+use APP\plugins\generic\formHoneypot\FormHoneypotSettingsForm;
+use APP\template\TemplateManager;
+
 
 class FormHoneypotPlugin extends GenericPlugin {
 
@@ -67,10 +80,10 @@ class FormHoneypotPlugin extends GenericPlugin {
 			// Add custom field if desired
 			Hook::add('TemplateManager::display', array($this, 'handleTemplateDisplay'));
 			Hook::add('registrationform::readuservars', array($this, 'handleUserVar'));
-			$element = $this->getSetting(CONTEXT_SITE, 'customElement');
+			$element = $this->getSetting(PKPApplication::CONTEXT_SITE, 'customElement');
 			if(!$element) {
 				// generate new form field
-				$this->updateSetting(CONTEXT_SITE, 'customElement', $this->generateElementName());
+				$this->updateSetting(PKPApplication::CONTEXT_SITE, 'customElement', $this->generateElementName());
 			}
 
 		}
@@ -112,21 +125,22 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function insertTag($hookName, $args) {
-		$templateMgr = TemplateManager::getManager();
+		$templateMgr = TemplateManager::getManager(Application::get()->getRequest());//Application::get()->getRequest()); 
 
-		$element = $this->getSetting(CONTEXT_SITE, 'customElement');
+		$element = $this->getSetting(PKPApplication::CONTEXT_SITE, 'customElement');
 
 		// only operate on user registration
 		if (method_exists('Application', 'get')) {
 			// OJS 3.2 and later
-			$request = Application::get()->getRequest();
+			$request = Application::get()->getRequest(); //may need to move above
 			$page = $request->getRequestedPage();
 			$op = $request->getRequestedOp();
-		} else {
-			// OJS 3.1.2 and earlier
-			$page = Request::getRequestedPage();
-			$op = Request::getRequestedOp();
 		}
+		// } else {
+		// 	// OJS 3.1.2 and earlier
+		// 	$page = Request::getRequestedPage();
+		// 	$op = Request::getRequestedOp();
+		// }
 		
 		if (isset($element) && $page === 'user' && substr($op, 0, 8) === 'register') {
 			$templateMgr->assign('element', $element);
@@ -153,9 +167,9 @@ class FormHoneypotPlugin extends GenericPlugin {
 	 */
 	function validateHoneypot($hookName, $params) {
 		
-		$element = $this->getSetting(CONTEXT_SITE, 'customElement');
-		$minTime = $this->getSetting(CONTEXT_SITE, 'formHoneypotMinimumTime');
-		$maxTime = $this->getSetting(CONTEXT_SITE, 'formHoneypotMaximumTime');
+		$element = $this->getSetting(PKPApplication::CONTEXT_SITE, 'customElement');
+		$minTime = $this->getSetting(PKPApplication::CONTEXT_SITE, 'formHoneypotMinimumTime');
+		$maxTime = $this->getSetting(PKPApplication::CONTEXT_SITE, 'formHoneypotMaximumTime');
 		$form = $params[0];
 		// If we have an element selected as a honeypot, check it 
 		if (isset($element) && isset($form)) {
@@ -176,7 +190,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 		if ($form && $form->isValid() && ($minTime > 0 || $maxTime > 0)) {
 			// Get the initial access to this form within this session
-			$sessionManager = SessionManager::getManager();
+			$sessionManager = SessionManager::getManager(Application::get()->getRequest());
 			$session = $sessionManager->getUserSession();
 			$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
 			$current = time();
@@ -188,6 +202,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 				$session->setSessionVar($this->getName()."::".$this->formTimerSetting, time());
 			} else {
 				$session->unsetSessionVar($this->getName()."::".$this->formTimerSetting);
+				$started = $session->unsetSessionVar($this->getName()."::".$this->formTimerSetting);
 			}
 		}
 		return false;
@@ -203,7 +218,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		 * remember when this form was initialized for the user
 		 * we'll store it as a user setting on form execution
 		 */
-		$sessionManager = SessionManager::getManager();
+		$sessionManager = SessionManager::getManager(Application::get()->getRequest());
 		$session = $sessionManager->getUserSession();
 		$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
 		if (!$started) {
@@ -218,12 +233,12 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function manage($args, $request) {
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
-				AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
-				$templateMgr = TemplateManager::getManager($request);
-				$templateMgr->register_function('plugin_url', array($this, 'smartyPluginUrl'));
+				//AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,  LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_USER);
+				//$templateMgr = TemplateManager::getManager($request);
+				//$templateMgr->registerPlugin('', 'plugin_url', array($this, 'smartyPluginUrl'));
 
-				$this->import('FormHoneypotSettingsForm');
-				$form = new FormHoneypotSettingsForm($this, CONTEXT_SITE);
+				//$this->import('FormHoneypotSettingsForm');
+				$form = new FormHoneypotSettingsForm($this, PKPApplication::CONTEXT_SITE);
 
 				// This assigns select options
 				if ($request->getUserVar('save')) {
@@ -301,7 +316,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 
 		switch ($template) {
 			case 'frontend/pages/userRegister.tpl':
-					$customElement = $this->getSetting(CONTEXT_SITE, 'customElement');
+					$customElement = $this->getSetting(PKPApplication::CONTEXT_SITE, 'customElement');
 					if (!empty($customElement)) {
 						if (method_exists($templateMgr, 'registerFilter')) {
 							// OJS 3.1.2 and later (Smarty 3)
@@ -323,7 +338,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 	function handleUserVar($hookName, $args) {
 		$form = $args[0];
 
-		$element = $this->getSetting(CONTEXT_SITE, 'customElement');
+		$element = $this->getSetting(PKPApplication::CONTEXT_SITE, 'customElement');
 		$args[1][] = $element;
 		return false;
 	}
@@ -344,9 +359,9 @@ class FormHoneypotPlugin extends GenericPlugin {
 			if (preg_match_all('/(\s*<div[^>]+class="fields"[^>]*>\s*)/', $output, $matches, PREG_OFFSET_CAPTURE/*, $formStart*/)) {
 				$placement = rand(0, count($matches[0])-1);
 				
-				$templateMgr = TemplateManager::getManager();
+				$templateMgr = TemplateManager::getManager(Application::get()->getRequest());
 
-				$element = $this->getSetting(CONTEXT_SITE, 'customElement');
+				$element = $this->getSetting(PKPApplication::CONTEXT_SITE, 'customElement');
 				$templateMgr->assign('element', $element);
 				$offset = $matches[0][$placement][1] + trim(mb_strlen($matches[0][$placement][0]));
 				$newOutput = substr($output, 0, $offset);

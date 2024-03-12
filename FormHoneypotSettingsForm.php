@@ -11,12 +11,13 @@
  *
  * @brief Form for journal managers to modify Form Honeypot plugin settings
  */
-
+namespace APP\plugins\generic\formHoneypot;
 
 use PKP\form\Form;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
+use APP\template\TemplateManager;
 
 class FormHoneypotSettingsForm extends Form {
 
@@ -44,8 +45,8 @@ class FormHoneypotSettingsForm extends Form {
 			parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
 		}
 
-		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMinimumTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', function ($s) {return ($s === "0" || $s > 0);}));
-		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMaximimTime', FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', function ($s) {return ($s === "0" || $s > 0);}));
+		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMinimumTime', FormValidatorCustom::FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.minimumTimeNumber', function ($s) {return ($s === "0" || $s > 0);}));
+		$this->addCheck(new FormValidatorCustom($this, 'formHoneypotMaximimTime', FormValidatorCustom::FORM_VALIDATOR_OPTIONAL_VALUE, 'plugins.generic.formHoneypot.manager.settings.maximumTimeNumber', function ($s) {return ($s === "0" || $s > 0);}));
 		$this->addCheck(new FormValidatorPost($this));
 		$this->addCheck(new FormValidatorCSRF($this));
 	}
