@@ -20,7 +20,6 @@ use PKP\config\Config;
 use PKP\core\PKPApplication;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
-use PKP\session\SessionManager;
 use APP\core\Application;
 use APP\core\Request;
 use APP\plugins\generic\formHoneypot\FormHoneypotSettingsForm;
@@ -174,18 +173,21 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 		if ($form && $form->isValid() && ($minTime > 0 || $maxTime > 0)) {
 			// Get the initial access to this form within this session
-			$sessionManager = SessionManager::getManager(Application::get()->getRequest());
-			$session = $sessionManager->getUserSession();
-			$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
+			$session = Application::get()->getRequest()->getSession();
+			// Find out when the user started editing the form. Originally set in initializeTimer()
+			// Relies on Laravel's session manager https://laravel.com/docs/11.x/session#retrieving-data 
+			$started = $session->get($this->getName()."::".$this->formTimerSetting);
 			$current = time();
 			if (!$started || ($minTime > 0 && $current - $started < $minTime) || ($maxTime > 0 && $current - $started > $maxTime)) {
 				$form->addError(
-					'username',
+					//Leaving field name blank since this error is not attached to a field
+					'',
 					__('plugins.generic.formHoneypot.invalidSessionTime')
 				);
-				$session->setSessionVar($this->getName()."::".$this->formTimerSetting, time());
+				//Reset the start timer as we display the form again following the validation error
+				$session->put($this->getName()."::".$this->formTimerSetting, time());
 			} else {
-				$session->unsetSessionVar($this->getName()."::".$this->formTimerSetting);
+				$session->forget($this->getName()."::".$this->formTimerSetting);
 			}
 		}
 		return false;
@@ -201,11 +203,11 @@ class FormHoneypotPlugin extends GenericPlugin {
 		 * remember when this form was initialized for the user
 		 * we'll store it as a user setting on form execution
 		 */
-		$sessionManager = SessionManager::getManager(Application::get()->getRequest());
-		$session = $sessionManager->getUserSession();
-		$started = $session->getSessionVar($this->getName()."::".$this->formTimerSetting);
+		$session = Application::get()->getRequest()->getSession();
+		$started = $session->get($this->getName()."::".$this->formTimerSetting);
 		if (!$started) {
-			$session->setSessionVar($this->getName()."::".$this->formTimerSetting, time());
+			//Set via https://laravel.com/docs/11.x/session#storing-data
+			$session->put($this->getName()."::".$this->formTimerSetting, time());
 		}
 		return false;
 	}
@@ -236,7 +238,7 @@ class FormHoneypotPlugin extends GenericPlugin {
 		}
 	}
 
-    /**
+	/**
 	 * Fetch the form.
 	 * @copydoc Form::fetch()
 	 */
