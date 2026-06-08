@@ -13,7 +13,7 @@
 	<application>formHoneypot</application>
 	<type>plugins.generic</type>
 	<release>1.6.0.0</release>
-	<date>2024-06-05</date>
+	<date>2026-06-08</date>
 	<sitewide>1</sitewide>
 	<lazy-load>1</lazy-load>
 	<class>FormHoneypotPlugin</class>
