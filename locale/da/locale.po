@@ -1,0 +1,55 @@
+# plugins/generic/formHoneypot/locale/en_US/locale.po
+#
+# Copyright (c) University of Pittsburgh
+# Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+#
+# Form Honeypot plugin localization strings
+
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.formHoneypot.displayName"
+msgstr "Form Honeypot Plugin"
+
+msgid "plugins.generic.formHoneypot.description"
+msgstr "Dette plugin tilføjer et felt til registreringsformularen og bruger det som en "honningkrukke". Dette felt vil være skjult "
+"fra brugere, og der vil opstå en fejl, hvis en bot udfylder dette felt. Du kan også angive en minimums- og maksimums-"
+"tid, som man må bruge på at færdiggøre registreringen. Hvis en bot fx færdiggør formularen på under 2 sekunder eller prøver at bruge "
+"den samme formular 30 minutter (1800 sekunder) senere, vil registreringen blive blokeret."
+
+msgid "plugins.generic.formHoneypot.leaveBlank"
+msgstr "Lad dette være tomt"
+
+msgid "plugins.generic.formHoneypot.doNotUseThisField"
+msgstr "Dette felt skal være tomt: {$element}"
+
+msgid "plugins.generic.formHoneypot.invalidSessionTime"
+msgstr "Din registrering er blevet blokeret."
+
+msgid "plugins.generic.formHoneypot.manager.formHoneypotSettings"
+msgstr "Formular Honeypot Indstillinger"
+
+msgid "plugins.generic.formHoneypot.manager.settings.description"
+msgstr "Vælg en minimumstid og en maksimumstid (i sekunder). Registreringsforsøg, der færdiggøres hurtigere end "
+"minimumstiden eller langsommere end maksimumstiden afvises. Du kan slå disse funktioner fra ved at sætte begge tider til 0."
+
+msgid "plugins.generic.formHoneypot.manager.settings.element"
+msgstr "Formular Element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.createNewElement"
+msgstr "Tilføj et nyt element"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTime"
+msgstr "Minimumstid (i sekunder)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.minimumTimeNumber"
+msgstr "Minimumstid skal være en positiv numerisk værdi."
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTime"
+msgstr "Maksimumstid (i sekunder)"
+
+msgid "plugins.generic.formHoneypot.manager.settings.maximumTimeNumber"
+msgstr "Maksimumstid skal være en positiv numerisk værdi."
